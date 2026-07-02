@@ -27,6 +27,7 @@ npm run start       # production: server serves the built client
 npm run db:migrate  # apply SQL migrations
 npm run db:seed     # load cleaned APLs from /data into Postgres (idempotent)
 npm test            # vitest — REQUIRED green for grounding/verification logic
+npm run lint        # eslint + prettier --check — REQUIRED clean before any commit
 ```
 
 ## Directory map
@@ -35,18 +36,22 @@ npm test            # vitest — REQUIRED green for grounding/verification logic
 /server/src
   index.ts                 Express entry; serves built client in prod
   /routes                  apls.ts, analyze.ts
-  /pipeline                runAnalysis.ts (orchestrator) + stage files
+  /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
+                           classifyRequirement.ts (pure trust routing: verify → grounded/abstained/excluded)
   /grounding               verifyQuote.ts  ← MOST IMPORTANT FILE. Pure, deterministic, unit-tested.
                            offsets.ts, fuzzy.ts
-  /llm                     client.ts (interface), openaiClient.ts, schemas.ts, prompts.ts
-  /db                      pool.ts, queries.ts, migrations/001_init.sql
+  /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts
+  /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql
   /domain                  departments.ts (controlled vocabulary)
-  /lib                     errors.ts (classifyError + retry), logger.ts
-/server/test               verifyQuote.test.ts, grounding.test.ts
-/client/src                App.tsx, api.ts, /components (SourcePane, ResultsPane,
-                           RequirementCard, ActionItemList, ExcludedList, StatusSteps, ExportButton)
+  /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts
+/server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts
+/client/src                App.tsx (?apl=<id> share URLs), api.ts, types.ts,
+                           /components (SourcePane, ResultsPane, RequirementCard, AbstainedList,
+                           ExcludedList, ActionItemList, StatusSteps, ExportButton, Badge)
 /data/apls                 <apl_number>.txt + metadata.json
-/data/seed.ts              idempotent loader
+/data/seed.ts              idempotent loader (clears stale analysis if full_text changes)
+docker-compose.yml         local Postgres 16 for dev (host port 5433)
+eslint.config.js           eslint + prettier (npm run lint)
 ```
 
 `server/src/grounding/verifyQuote.ts` is the heart of the project. It must be **pure and deterministic** and carry the strongest test coverage in the repo. Nothing there may call an LLM or touch the network.

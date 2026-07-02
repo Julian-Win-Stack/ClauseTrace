@@ -135,7 +135,7 @@ Orchestrated in `server/src/pipeline/runAnalysis.ts`. Given an APL (selected pre
 
 **Call strategy — start with the fewest LLM calls, split only if quality demands it.**
 
-The stages below are **logical steps, not a fixed number of LLM calls.** Start with the simplest implementation: a **single LLM call** that returns the summary, the requirements (with quotes and departments), and the action items together, using **OpenAI strict structured output** so the response is guaranteed to match the schema. Then look at real output on real APLs, and only add calls if the output actually degrades. On a long document the model may **miss requirements** or return quotes that **fail verification** at a high rate — *that* is the signal to split extraction (Stage 2) into focused, section-by-section calls. Note the trigger carefully: with strict structured output on, malformed JSON can't happen, so the signal is never "broken format" — it is **missing or unverifiable content.** The deterministic verification pass (Stage 2, step 2) is **always** separate code, never an LLM call. Do not pre-optimize the call count; begin at one and decompose only where verification shows it's needed.
+The stages below are **logical steps, not a fixed number of LLM calls.** Start with the simplest implementation: a **single LLM call** that returns the summary, the requirements (with quotes and departments), and the action items together, using **OpenAI strict structured output** so the response is guaranteed to match the schema. Then look at real output on real APLs, and only add calls if the output actually degrades. On a long document the model may **miss requirements** or return quotes that **fail verification** at a high rate — *that* is the signal to split extraction (Stage 2) into focused, section-by-section calls. Note the trigger carefully: with strict structured output on, malformed JSON can't happen, so the signal is never "broken format" — it is **missing or unverifiable content.** A third valid trigger: the **abstained category never fires** on the seeded "plausible but not stated" document — open extraction rarely volunteers `not_stated`, so if abstention can't be demonstrated, escalate to the "list topics, then extract per topic" shape where each probed topic can honestly return `not_stated`. The deterministic verification pass (Stage 2, step 2) is **always** separate code, never an LLM call. Do not pre-optimize the call count; begin at one and decompose only where verification shows it's needed.
 
 **Stage 0 — Resolve source.**
 Load the APL's canonical `full_text` from the database (or, for pasted text, create an ad-hoc APL row first). **This stored text is the single source of truth for all citations and offsets.** Nothing is grounded against anything else.
@@ -161,6 +161,8 @@ Trust is decided by code verification, not by the model's own say-so.
 
 **Stage 3 — Draft action items (generated/advisory).**
 For each **grounded** requirement, an LLM call (or a single batched call) produces one or more action items: `action_item_text`, `suggested_owner_department` (from the controlled list), `priority` (`high|medium|low`). Action items are guidance derived from requirements — clearly labeled generated, visually and structurally distinct from grounded source claims.
+
+In one-call mode, action items arrive attached to requirements *before* verification runs. Items whose parent requirement is not grounded (excluded or abstained) are **discarded — never stored, never shown as guidance** (guidance derived from an untrusted claim is itself untrusted). The discard is **not silent**: the run's `warnings[]` includes the discarded count, and the UI notes on each excluded requirement that any drafted action items were dropped.
 
 **Stage 4 — Save & return.**
 Save the results (summary, requirements with their status / offsets / departments, and action items) to the database, **replacing any previous analysis for this APL**. Return the full structured result to the caller (summary, grounded requirements with offsets and departments, abstained items, excluded items, action items, and any warnings from partial failures).
@@ -237,9 +239,10 @@ A focused, two-pane analysis view. When implementing, follow strong frontend des
   - **Summary** at top, badged *Generated*.
   - **Requirements** list. Each **grounded** requirement is a card showing: the paraphrased requirement, the verified `source_quote`, a status/method badge (e.g., *Grounded · exact* / *Grounded · fuzzy*), impacted-department tags, and its action item(s). **Clicking a requirement scrolls to and highlights the exact source span in the left pane.**
   - **Abstained** items shown distinctly (e.g., "Not stated in source").
-  - **Excluded (unverified)** section — collapsible — listing any model assertions that failed verification, explicitly marked as not trusted. Surfacing these is a deliberate transparency feature; do not hide them.
+  - **Excluded (unverified)** section — collapsible — listing any model assertions that failed verification, explicitly marked as not trusted. Surfacing these is a deliberate transparency feature; do not hide them. Each excluded item also notes that any action items drafted for it were discarded (unverified requirements never produce guidance).
   - Action items, badged *Generated / advisory*, visually distinct from grounded requirements.
 - **Controls:** select a preloaded APL or paste text; run analysis; per-stage status while running (mirror the pipeline: *Summarizing → Extracting requirements → Verifying citations → Classifying → Drafting action items*).
+- **Shareable URLs:** the selected APL is reflected in the URL (`?apl=<id>` or `/apl/:id`); opening that link loads the document and its saved analysis. This is what makes "revisited/shared" literally true in a no-auth app.
 - **Export:** a button to copy or download the checklist (action items + grounded requirements with citations) as Markdown (`.md`).
 
 **Trust must be legible in the UI.** A grounded requirement (source-verified) and a generated action item (advisory) must never look the same or be confusable.
@@ -276,7 +279,9 @@ clausetrace/
   DECISIONS.md
   .env.example
   Dockerfile
-  package.json
+  docker-compose.yml        # local Postgres 16 for dev (host port 5433)
+  eslint.config.js          # eslint + prettier (npm run lint)
+  package.json              # npm workspaces: server + client
   /server
     /src
       index.ts              # Express entry; serves built client in prod
@@ -284,47 +289,52 @@ clausetrace/
         apls.ts             # GET /api/apls, GET /api/apls/:id, POST /api/apls (paste)
         analyze.ts          # POST /api/analyze
       /pipeline
-        runAnalysis.ts      # orchestrator
-        summarize.ts
-        extractRequirements.ts
-        classifyDepartments.ts   # may be folded into extraction
-        generateActionItems.ts
+        runAnalysis.ts      # orchestrator — single-call strategy (summary +
+                            # requirements + action items in one strict call);
+                            # the separate stage files were folded into it
+        classifyRequirement.ts   # pure trust routing: verify → grounded/abstained/excluded,
+                                 # department backstop, orphan action-item discard
       /grounding
         verifyQuote.ts      # deterministic verification — the heart of the project
         offsets.ts
         fuzzy.ts
       /llm
         client.ts           # LLMClient interface
-        openaiClient.ts
-        schemas.ts          # zod schemas
+        openaiClient.ts     # + getLLMClient factory; the only OpenAI SDK import
+        schemas.ts          # zod schemas (strictObject for OpenAI strict mode)
         prompts.ts
       /db
         pool.ts
         queries.ts
+        migrate.ts          # migration runner
         /migrations/001_init.sql
       /domain
         departments.ts      # controlled vocabulary
       /lib
-        errors.ts           # classifyError + retry
+        env.ts              # loads repo-root .env regardless of cwd
+        errors.ts           # classifyError + retry + timeout
         logger.ts
     /test
       verifyQuote.test.ts
       grounding.test.ts
+      classifyRequirement.test.ts
   /client
     index.html
-    vite.config.ts
-    tailwind.config.js
+    vite.config.ts          # react + tailwind v4 plugins; /api dev proxy
     /src
-      App.tsx
+      App.tsx               # selection, ?apl=<id> share URLs, paste, analyze
       api.ts
+      types.ts
       /components
         SourcePane.tsx
         ResultsPane.tsx
         RequirementCard.tsx
+        AbstainedList.tsx
         ActionItemList.tsx
         ExcludedList.tsx
         StatusSteps.tsx
         ExportButton.tsx
+        Badge.tsx
   /data
     /apls                   # <apl_number>.txt + metadata.json
     seed.ts
@@ -332,7 +342,7 @@ clausetrace/
 
 **API surface**
 
-- `GET /api/apls` — list preloaded APLs (id, number, title, whether analyzed).
+- `GET /api/apls` — list all APLs, preloaded **and** ad-hoc pasted (id, number, title, `is_adhoc`, whether analyzed). The UI badges pasted docs as *Pasted* — without listing them, a pasted analysis would be unreachable after the session, defeating persist-to-revisit.
 - `GET /api/apls/:id` — full text + metadata **plus its saved analysis** (summary, requirements, action items), if one exists.
 - `POST /api/apls` — create an ad-hoc APL from pasted text; returns id.
 - `POST /api/analyze` — body `{ aplId }` (or `{ text }` shorthand) → runs the pipeline, **saves the results to that APL (replacing any previous analysis)**, and returns the full structured result.
@@ -343,7 +353,7 @@ clausetrace/
 DATABASE_URL=
 OPENAI_API_KEY=
 LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o
+LLM_MODEL=gpt-5.5
 FUZZY_MATCH_THRESHOLD=0.9
 PORT=3000
 ```
@@ -357,4 +367,5 @@ start       # production: server serves built client
 db:migrate  # apply SQL migrations
 db:seed     # load APLs from /data into Postgres
 test        # vitest
+lint        # eslint (typescript-eslint) + prettier --check
 ```

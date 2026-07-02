@@ -52,7 +52,7 @@ The pipeline (`server/src/pipeline/runAnalysis.ts`) runs the stages in order and
 
 ## Getting started
 
-Requires Node 20+ and a Postgres database.
+Requires Node 20+ and Docker (for the dev Postgres).
 
 ```bash
 git clone <repo>
@@ -60,6 +60,7 @@ cd clausetrace
 npm install
 
 cp .env.example .env          # then fill in the values below
+docker compose up -d          # local Postgres 16 (host port 5433)
 npm run db:migrate            # create tables
 npm run db:seed               # load cleaned APLs from /data
 
@@ -69,10 +70,10 @@ npm run dev                   # server + client with watch
 ### Environment variables (`.env`)
 
 ```
-DATABASE_URL=postgres://user:pass@host:5432/clausetrace
+DATABASE_URL=postgres://postgres:postgres@localhost:5433/clausetrace
 OPENAI_API_KEY=sk-...
 LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o
+LLM_MODEL=gpt-5.5
 FUZZY_MATCH_THRESHOLD=0.9      # accept fuzzy citation matches at/above this similarity
 PORT=3000
 ```
@@ -86,6 +87,7 @@ npm run start       # production: server serves the built client
 npm run db:migrate  # apply SQL migrations
 npm run db:seed     # load APLs from /data into Postgres (idempotent)
 npm test            # vitest
+npm run lint        # eslint + prettier --check
 ```
 
 ## Data
@@ -94,7 +96,7 @@ Source documents are **real, public DHCS APLs** (including APL 24-013), each cle
 
 ## API
 
-- `GET /api/apls` — list preloaded APLs (id, number, title, analyzed?).
+- `GET /api/apls` — list all APLs, preloaded and pasted (id, number, title, is_adhoc, analyzed?).
 - `GET /api/apls/:id` — full text + metadata, plus its saved analysis if one exists.
 - `POST /api/apls` — create an ad-hoc APL from pasted text; returns id.
 - `POST /api/analyze` — body `{ aplId }` (or `{ text }`) → runs the pipeline, saves results (replacing any previous analysis), returns the full structured result.
