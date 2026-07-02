@@ -5,8 +5,6 @@ import type { ExtractedRequirement } from '../src/llm/schemas.js';
 const FULL_TEXT =
   'Plans must respond to standard prior authorization requests within five business days.';
 
-const THRESHOLD = 0.9;
-
 function extracted(
   overrides: Partial<ExtractedRequirement>,
 ): ExtractedRequirement {
@@ -29,7 +27,7 @@ function extracted(
 
 describe('trust routing', () => {
   it('routes a verified quote to grounded, keeping offsets and action items', () => {
-    const result = classifyRequirement(extracted({}), FULL_TEXT, THRESHOLD);
+    const result = classifyRequirement(extracted({}), FULL_TEXT);
     expect(result.status).toBe('grounded');
     expect(result.verification_method).toBe('exact');
     expect(
@@ -46,7 +44,6 @@ describe('trust routing', () => {
     const result = classifyRequirement(
       extracted({ not_stated: true, source_quote: '' }),
       FULL_TEXT,
-      THRESHOLD,
     );
     expect(result.status).toBe('abstained');
     expect(result.source_quote).toBeNull();
@@ -60,7 +57,6 @@ describe('trust routing', () => {
     const result = classifyRequirement(
       extracted({ source_quote: fabricatedQuote }),
       FULL_TEXT,
-      THRESHOLD,
     );
     expect(result.status).toBe('excluded');
     expect(result.source_quote).toBe(fabricatedQuote);
@@ -72,7 +68,6 @@ describe('trust routing', () => {
     const result = classifyRequirement(
       extracted({ not_stated: true }),
       FULL_TEXT,
-      THRESHOLD,
     );
     expect(result.status).toBe('grounded');
   });
@@ -83,7 +78,6 @@ describe('trust routing', () => {
         impacted_departments: ['Claims', 'Claims', 'Member Services'],
       }),
       FULL_TEXT,
-      THRESHOLD,
     );
     expect(result.impacted_departments).toEqual(['Claims', 'Member Services']);
   });

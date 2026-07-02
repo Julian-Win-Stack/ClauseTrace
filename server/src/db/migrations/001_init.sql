@@ -26,8 +26,7 @@ CREATE TABLE requirements (
   source_end_offset INT,
   status TEXT NOT NULL CHECK (status IN ('grounded', 'abstained', 'excluded')),
   verification_method TEXT NOT NULL
-    CHECK (verification_method IN ('exact', 'normalized', 'fuzzy', 'none')),
-  match_score REAL,
+    CHECK (verification_method IN ('exact', 'normalized', 'none')),
   impacted_departments JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

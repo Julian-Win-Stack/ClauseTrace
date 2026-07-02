@@ -1,16 +1,14 @@
 import { buildNormalized, mapSpanToRaw } from './offsets.js';
-import { findBestWindow } from './fuzzy.js';
 
-export type VerificationMethod = 'exact' | 'normalized' | 'fuzzy' | 'none';
+export type VerificationMethod = 'exact' | 'normalized' | 'none';
 
 export type VerifyResult =
   | {
       verified: true;
-      method: 'exact' | 'normalized' | 'fuzzy';
+      method: 'exact' | 'normalized';
       /** [start, end) character offsets into the raw fullText */
       start: number;
       end: number;
-      score: number;
     }
   | { verified: false; method: 'none' };
 
@@ -18,15 +16,19 @@ const NOT_VERIFIED: VerifyResult = { verified: false, method: 'none' };
 
 /**
  * The trust decision for a citation. Pure and deterministic — no I/O, no
- * LLM, no randomness. Tries, in order:
- *   1. exact substring
- *   2. normalized match (whitespace/quotes/dashes/case)
- *   3. fuzzy best-window match, accepted only at/above fuzzyThreshold
+ * LLM, and deliberately NO similarity scoring. A quote verifies only when
+ * every character corresponds to the source:
+ *   1. exact substring, or
+ *   2. normalized match (whitespace runs, typographic quotes/dashes, case).
+ * Anything less — including a 99%-similar quote — is rejected and surfaced
+ * as Excluded. Similarity scoring was removed on purpose: in a long quote a
+ * changed deadline or dropped "not" costs only a sliver of similarity, so
+ * any fixed threshold eventually certifies an altered obligation as
+ * verified (see DECISIONS.md §5).
  */
 export function verifyQuote(
   sourceQuote: string,
   fullText: string,
-  fuzzyThreshold: number,
 ): VerifyResult {
   const quote = sourceQuote.trim();
   if (quote.length === 0 || fullText.length === 0) return NOT_VERIFIED;
@@ -38,7 +40,6 @@ export function verifyQuote(
       method: 'exact',
       start: exactIdx,
       end: exactIdx + quote.length,
-      score: 1,
     };
   }
 
@@ -53,19 +54,7 @@ export function verifyQuote(
       normIdx,
       normIdx + quoteNorm.length,
     );
-    return { verified: true, method: 'normalized', start, end, score: 1 };
-  }
-
-  const fuzzy = findBestWindow(quoteNorm, docNorm.normalized);
-  if (fuzzy !== null && fuzzy.score >= fuzzyThreshold) {
-    const { start, end } = mapSpanToRaw(docNorm, fuzzy.start, fuzzy.end);
-    return {
-      verified: true,
-      method: 'fuzzy',
-      start,
-      end,
-      score: fuzzy.score,
-    };
+    return { verified: true, method: 'normalized', start, end };
   }
 
   return NOT_VERIFIED;

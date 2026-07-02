@@ -35,8 +35,7 @@ export interface RequirementDto {
   requirement_text: string;
   source_quote: string | null;
   status: 'grounded' | 'abstained' | 'excluded';
-  verification_method: 'exact' | 'normalized' | 'fuzzy' | 'none';
-  match_score: number | null;
+  verification_method: 'exact' | 'normalized' | 'none';
   source_start_offset: number | null;
   source_end_offset: number | null;
   impacted_departments: string[];
@@ -89,8 +88,7 @@ interface RequirementRow {
   requirement_text: string;
   source_quote: string | null;
   status: 'grounded' | 'abstained' | 'excluded';
-  verification_method: 'exact' | 'normalized' | 'fuzzy' | 'none';
-  match_score: number | null;
+  verification_method: 'exact' | 'normalized' | 'none';
   source_start_offset: number | null;
   source_end_offset: number | null;
   impacted_departments: string[];
@@ -106,7 +104,7 @@ export async function getAnalysis(aplId: number): Promise<AnalysisDto | null> {
 
   const reqs = await pool.query<RequirementRow>(
     `SELECT id, ordinal, requirement_text, source_quote, status,
-            verification_method, match_score, source_start_offset,
+            verification_method, source_start_offset,
             source_end_offset, impacted_departments
      FROM requirements WHERE apl_id = $1 ORDER BY ordinal`,
     [aplId],
@@ -140,7 +138,6 @@ export async function getAnalysis(aplId: number): Promise<AnalysisDto | null> {
       source_quote: r.source_quote,
       status: r.status,
       verification_method: r.verification_method,
-      match_score: r.match_score,
       source_start_offset: r.source_start_offset,
       source_end_offset: r.source_end_offset,
       impacted_departments: r.impacted_departments,
@@ -167,9 +164,9 @@ export async function saveAnalysis(
       const inserted = await client.query<{ id: number }>(
         `INSERT INTO requirements
            (apl_id, ordinal, requirement_text, source_quote, status,
-            verification_method, match_score, source_start_offset,
+            verification_method, source_start_offset,
             source_end_offset, impacted_departments)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING id`,
         [
           aplId,
@@ -178,7 +175,6 @@ export async function saveAnalysis(
           req.source_quote,
           req.status,
           req.verification_method,
-          req.match_score,
           req.source_start_offset,
           req.source_end_offset,
           JSON.stringify(req.impacted_departments),

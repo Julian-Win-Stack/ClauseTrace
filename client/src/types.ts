@@ -34,8 +34,7 @@ export interface Requirement {
   requirement_text: string;
   source_quote: string | null;
   status: RequirementStatus;
-  verification_method: 'exact' | 'normalized' | 'fuzzy' | 'none';
-  match_score: number | null;
+  verification_method: 'exact' | 'normalized' | 'none';
   source_start_offset: number | null;
   source_end_offset: number | null;
   impacted_departments: string[];

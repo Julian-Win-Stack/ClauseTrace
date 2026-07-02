@@ -79,9 +79,8 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     'analysis',
   );
 
-  const threshold = Number(process.env.FUZZY_MATCH_THRESHOLD ?? 0.9);
   const classified = response.requirements.map((req) =>
-    classifyRequirement(req, apl.full_text, threshold),
+    classifyRequirement(req, apl.full_text),
   );
 
   const warnings: string[] = [];

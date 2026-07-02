@@ -15,7 +15,6 @@ export interface ClassifiedRequirement {
   source_quote: string | null;
   status: RequirementStatus;
   verification_method: VerificationMethod;
-  match_score: number | null;
   source_start_offset: number | null;
   source_end_offset: number | null;
   impacted_departments: Department[];
@@ -27,14 +26,13 @@ export interface ClassifiedRequirement {
 
 /**
  * The trust routing. Pure and deterministic:
- *   quote verified            → grounded (with offsets)
+ *   quote verified             → grounded (with offsets)
  *   else model said not_stated → abstained
  *   else                       → excluded (stored, shown, never trusted)
  */
 export function classifyRequirement(
   extracted: ExtractedRequirement,
   fullText: string,
-  fuzzyThreshold: number,
 ): ClassifiedRequirement {
   // Schema already restricts departments to the vocabulary; this filter is
   // the mandated deterministic backstop in case the schema ever loosens.
@@ -42,14 +40,13 @@ export function classifyRequirement(
     ...new Set(extracted.impacted_departments.filter(isValidDepartment)),
   ];
 
-  const result = verifyQuote(extracted.source_quote, fullText, fuzzyThreshold);
+  const result = verifyQuote(extracted.source_quote, fullText);
   if (result.verified) {
     return {
       requirement_text: extracted.requirement_text,
       source_quote: extracted.source_quote,
       status: 'grounded',
       verification_method: result.method,
-      match_score: result.score,
       source_start_offset: result.start,
       source_end_offset: result.end,
       impacted_departments: departments,
@@ -63,7 +60,6 @@ export function classifyRequirement(
     source_quote: extracted.not_stated ? null : extracted.source_quote,
     status: extracted.not_stated ? 'abstained' : 'excluded',
     verification_method: 'none',
-    match_score: null,
     source_start_offset: null,
     source_end_offset: null,
     impacted_departments: departments,

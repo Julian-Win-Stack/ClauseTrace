@@ -12,13 +12,10 @@ export function RequirementCard({
 
   // The verification stamp makes the deterministic check visible — the product's
   // whole thesis is that code, not the model, decided this quote is real.
-  const stamp = () => {
-    const method = requirement.verification_method;
-    if (method === 'fuzzy' && requirement.match_score !== null) {
-      return `fuzzy match ${Math.round(requirement.match_score * 100)}%`;
-    }
-    return method === 'normalized' ? 'normalized match' : 'exact match';
-  };
+  const stamp =
+    requirement.verification_method === 'normalized'
+      ? 'normalized match'
+      : 'exact match';
   const offsets = clickable ? `offset ${start}–${end}` : null;
 
   return (
@@ -62,7 +59,7 @@ export function RequirementCard({
           Verified
         </span>
         <span className="font-mono text-[10.5px] text-ink-faint">
-          {stamp()}
+          {stamp}
           {offsets ? ` · ${offsets}` : ''}
         </span>
         <span className="ml-auto font-mono text-[10.5px] text-ink-faint">

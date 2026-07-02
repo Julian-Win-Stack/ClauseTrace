@@ -149,8 +149,7 @@ One LLM call over the full text → a concise plain-language summary. Labeled ge
 2. **Verification pass (deterministic code — `grounding/verifyQuote.ts`):** for each returned `source_quote`, attempt to locate it in `full_text`:
    - **Exact substring** match → `verified: true`, `method: "exact"`, record `[start, end)` offsets.
    - Else **normalized** match (collapse whitespace, normalize quotes/dashes, case-insensitive) → `verified: true`, `method: "normalized"`, map back to approximate raw offsets.
-   - Else **fuzzy** match: sliding-window similarity (e.g., token- or Levenshtein-ratio based) to find the best-matching span; accept only if similarity ≥ `FUZZY_MATCH_THRESHOLD` → `verified: true`, `method: "fuzzy"`, record offsets and `score`.
-   - Else → `verified: false`.
+   - Else → `verified: false`. There is deliberately **no similarity/fuzzy tier**: in a long quote a changed number or dropped "not" costs only a sliver of similarity, so any threshold eventually certifies an altered obligation as verified — the exact failure this product exists to prevent. Every character of an accepted quote corresponds to the source. See `DECISIONS.md` §5.
 3. **Classification of each requirement:**
    - `verified: true` → **grounded** (stored with offsets).
    - model returned `not_stated: true` → **abstained**.
@@ -179,7 +178,7 @@ Use plain SQL migrations. Suggested schema (adjust naming as needed, keep the st
 
 **`requirements`**
 
-- `id` (pk), `apl_id` (fk), `ordinal` (int), `requirement_text` (text), `source_quote` (text), `source_start_offset` (int, nullable), `source_end_offset` (int, nullable), `status` (`grounded|abstained|excluded`), `verification_method` (`exact|normalized|fuzzy|none`), `match_score` (float, nullable), `impacted_departments` (jsonb array), `created_at`.
+- `id` (pk), `apl_id` (fk), `ordinal` (int), `requirement_text` (text), `source_quote` (text), `source_start_offset` (int, nullable), `source_end_offset` (int, nullable), `status` (`grounded|abstained|excluded`), `verification_method` (`exact|normalized|none`), `impacted_departments` (jsonb array), `created_at`.
 
 **`action_items`**
 
@@ -237,7 +236,7 @@ A focused, two-pane analysis view. When implementing, follow strong frontend des
 - **Left / source pane:** the APL's canonical text, rendered with preserved paragraph/section structure. Supports highlighting a character range.
 - **Right / results pane:**
   - **Summary** at top, badged *Generated*.
-  - **Requirements** list. Each **grounded** requirement is a card showing: the paraphrased requirement, the verified `source_quote`, a status/method badge (e.g., *Grounded · exact* / *Grounded · fuzzy*), impacted-department tags, and its action item(s). **Clicking a requirement scrolls to and highlights the exact source span in the left pane.**
+  - **Requirements** list. Each **grounded** requirement is a card showing: the paraphrased requirement, the verified `source_quote`, a status/method badge (*Grounded · exact* / *Grounded · normalized*), impacted-department tags, and its action item(s). **Clicking a requirement scrolls to and highlights the exact source span in the left pane.**
   - **Abstained** items shown distinctly (e.g., "Not stated in source").
   - **Excluded (unverified)** section — collapsible — listing any model assertions that failed verification, explicitly marked as not trusted. Surfacing these is a deliberate transparency feature; do not hide them. Each excluded item also notes that any action items drafted for it were discarded (unverified requirements never produce guidance).
   - Action items, badged *Generated / advisory*, visually distinct from grounded requirements.
@@ -297,7 +296,6 @@ clausetrace/
       /grounding
         verifyQuote.ts      # deterministic verification — the heart of the project
         offsets.ts
-        fuzzy.ts
       /llm
         client.ts           # LLMClient interface
         openaiClient.ts     # + getLLMClient factory; the only OpenAI SDK import
@@ -354,7 +352,6 @@ DATABASE_URL=
 OPENAI_API_KEY=
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-5.5
-FUZZY_MATCH_THRESHOLD=0.9
 PORT=3000
 ```
 

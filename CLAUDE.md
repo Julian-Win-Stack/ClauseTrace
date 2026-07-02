@@ -39,7 +39,7 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
                            classifyRequirement.ts (pure trust routing: verify → grounded/abstained/excluded)
   /grounding               verifyQuote.ts  ← MOST IMPORTANT FILE. Pure, deterministic, unit-tested.
-                           offsets.ts, fuzzy.ts
+                           offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §5)
   /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts
   /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql
   /domain                  departments.ts (controlled vocabulary)

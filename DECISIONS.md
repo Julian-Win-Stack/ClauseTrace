@@ -63,6 +63,20 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ---
 
+## 5. No fuzzy / similarity-based citation matching
+
+**Decision:** A `source_quote` is verified only when **every character corresponds to the source text** — either verbatim (`exact`) or after unifying whitespace runs, typographic quotes/dashes, and case (`normalized`). There is no similarity-scored fallback tier. Anything less than a full-content match is rejected into the visible *Excluded* list.
+
+**Why:**
+- **Similarity thresholds structurally fail on long quotes.** A changed number ("thirty (30)" → "sixty (60)"), a dropped "not", or a swapped modal ("must" → "may") alters a fixed, tiny part of a quote, while the similarity denominator grows with quote length. Measured on the initial implementation: a 51-word quote with only its deadline changed scored **0.94** against a 0.9 threshold — *verified*. Raising the bar doesn't help: at 0.95, a 77-word mutated quote scored **0.959** — still verified. Every fixed threshold has a quote length beyond which an altered obligation gets certified.
+- **That failure is invisible by construction.** A falsely *rejected* real quote lands in Excluded, on screen, where a human catches it. A falsely *accepted* fake quote looks exactly like a verified one — green badge, citation, highlight — and can only be caught by someone who already knows the source. In compliance, that's a plan building its process around a deadline the regulation doesn't say.
+- **The asymmetry decides it.** The cost of strictness is that a genuine quote with a transcription slip gets excluded — visible, auditable, recoverable by re-running. The cost of leniency is a certified falsehood. The product's one promise is that the green badge cannot lie; strictness is the only side of the trade that keeps the promise.
+- The normalized tier keeps the *harmless* variance (line wraps, curly quotes, case) from flooding Excluded — it is still a full character-correspondence check, not a score.
+
+**When we'd revisit:** only with a mechanism that preserves the guarantee — e.g., an edit-distance tier that additionally requires exact agreement on load-bearing tokens (numbers, negations, modals) — and only if real APLs show the strict tiers rejecting an unacceptable share of genuine quotes. A plain similarity score never comes back.
+
+---
+
 ## The shape of these decisions
 
 Read together, the exclusions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, whole-document context, pre-verified source text) and cut what would quietly undermine it (fake policy matching, retrieval that severs cross-references, dirty parses, unlinearizable tables). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.

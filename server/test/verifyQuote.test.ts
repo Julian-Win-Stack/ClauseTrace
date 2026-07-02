@@ -13,13 +13,11 @@ const FULL_TEXT = [
   'The notice must use "plain language" as defined by DHCS.',
 ].join('\n');
 
-const THRESHOLD = 0.9;
-
 describe('exact match', () => {
   it('verifies a verbatim quote with correct offsets', () => {
     const quote = 'Plans must respond to expedited requests within 72 hours.';
-    const result = verifyQuote(quote, FULL_TEXT, THRESHOLD);
-    expect(result).toMatchObject({ verified: true, method: 'exact', score: 1 });
+    const result = verifyQuote(quote, FULL_TEXT);
+    expect(result).toMatchObject({ verified: true, method: 'exact' });
     if (!result.verified) throw new Error('unreachable');
     expect(FULL_TEXT.slice(result.start, result.end)).toBe(quote);
   });
@@ -28,7 +26,6 @@ describe('exact match', () => {
     const result = verifyQuote(
       '  Plans must respond to expedited requests within 72 hours.\n',
       FULL_TEXT,
-      THRESHOLD,
     );
     expect(result).toMatchObject({ verified: true, method: 'exact' });
   });
@@ -38,7 +35,7 @@ describe('normalized match', () => {
   it('matches when whitespace differs (line wraps collapsed)', () => {
     const quote =
       'Plans must respond to standard prior authorization requests\nwithin five (5)  business days of receipt.';
-    const result = verifyQuote(quote, FULL_TEXT, THRESHOLD);
+    const result = verifyQuote(quote, FULL_TEXT);
     expect(result).toMatchObject({ verified: true, method: 'normalized' });
     if (!result.verified) throw new Error('unreachable');
     // Raw slice must be the same passage, modulo the whitespace difference.
@@ -57,39 +54,56 @@ describe('normalized match', () => {
       'the notice must use "plain language" as defined by dhcs.',
     ],
   ])('matches despite %s', (_label, quote) => {
-    expect(verifyQuote(quote, FULL_TEXT, THRESHOLD)).toMatchObject({
+    expect(verifyQuote(quote, FULL_TEXT)).toMatchObject({
       verified: true,
       method: 'normalized',
     });
   });
 });
 
-describe('fuzzy match', () => {
-  const nearMiss =
-    'Plans must respond to routine prior authorization requests within five (5) business days of receipt.';
+// Wrong #2 — the dangerous direction. A falsely REJECTED real quote is
+// visible on screen (it lands in Excluded); a falsely ACCEPTED fake quote
+// looks identical to a real one and can only be caught here, by handing the
+// verifier quotes KNOWN to be fabricated and asserting rejection. With no
+// similarity tier, any content difference at all must reject.
+describe('adversarial false accepts (fake-smoke tests)', () => {
+  const DOC = [
+    'APL 26-001: Corrective Action and Delegation Requirements.',
+    'Plans must submit a corrective action plan to the Department within thirty (30) calendar days of receiving a notice of noncompliance, and must include in that plan a description of the root cause, the remediation steps, the responsible business units, and the date by which each remediation step will be completed.',
+    'Plans must respond to member grievances within thirty (30) calendar days.',
+    'Plans must not delegate final adverse benefit determinations to any subcontractor.',
+    'The Department may impose sanctions for repeated noncompliance.',
+  ].join('\n');
 
-  it('accepts a near-miss at a permissive threshold, with a sub-1 score', () => {
-    const result = verifyQuote(nearMiss, FULL_TEXT, 0.5);
-    expect(result).toMatchObject({ verified: true, method: 'fuzzy' });
-    if (!result.verified) throw new Error('unreachable');
-    expect(result.score).toBeGreaterThanOrEqual(0.5);
-    expect(result.score).toBeLessThan(1);
-    // Offsets must land on the real passage it approximates.
-    expect(FULL_TEXT.slice(result.start, result.end)).toContain(
-      'prior authorization requests',
-    );
+  it.each([
+    [
+      'a full paraphrase of a real obligation',
+      'A corrective action plan has to be filed with DHCS no later than one month after a plan gets a noncompliance notice.',
+    ],
+    [
+      'a quote stitched from two distant real passages',
+      'Plans must submit a corrective action plan to the Department and the Department may impose sanctions for repeated noncompliance.',
+    ],
+    [
+      'a real quote with a single word swapped',
+      'Plans must respond to member complaints within thirty (30) calendar days.',
+    ],
+    [
+      'a short real quote with its deadline changed',
+      'Plans must respond to member grievances within sixty (60) calendar days.',
+    ],
+    [
+      'a short real prohibition with its negation dropped',
+      'Plans must delegate final adverse benefit determinations to any subcontractor.',
+    ],
+  ])('rejects %s', (_label, fabricated) => {
+    expect(verifyQuote(fabricated, DOC).verified).toBe(false);
   });
 
-  it('rejects the same near-miss at a strict threshold', () => {
-    const result = verifyQuote(nearMiss, FULL_TEXT, 0.99);
-    expect(result).toEqual({ verified: false, method: 'none' });
-  });
-
-  it('rejects a fabricated quote sharing only vocabulary with the source', () => {
-    const fabricated =
-      'Plans must submit quarterly grievance reports to the department within 30 calendar days.';
-    const result = verifyQuote(fabricated, FULL_TEXT, THRESHOLD);
-    expect(result).toEqual({ verified: false, method: 'none' });
+  it('rejects a LONG real quote with only its deadline changed — quote length must not dilute a substance-changing mutation', () => {
+    const mutated =
+      'Plans must submit a corrective action plan to the Department within sixty (60) calendar days of receiving a notice of noncompliance, and must include in that plan a description of the root cause, the remediation steps, the responsible business units, and the date by which each remediation step will be completed.';
+    expect(verifyQuote(mutated, DOC).verified).toBe(false);
   });
 });
 
@@ -104,7 +118,7 @@ describe('unverifiable input', () => {
     ],
     ['an empty document', 'anything', ''],
   ])('rejects %s', (_label, quote, doc) => {
-    expect(verifyQuote(quote, doc, THRESHOLD)).toEqual({
+    expect(verifyQuote(quote, doc)).toEqual({
       verified: false,
       method: 'none',
     });

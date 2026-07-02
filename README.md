@@ -74,7 +74,6 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5433/clausetrace
 OPENAI_API_KEY=sk-...
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-5.5
-FUZZY_MATCH_THRESHOLD=0.9      # accept fuzzy citation matches at/above this similarity
 PORT=3000
 ```
 
@@ -107,7 +106,7 @@ Read these honestly — they define the edges of what the tool guarantees.
 
 - **Grounding verifies existence, not interpretation.** A cited span is confirmed to exist in the source; the tool does **not** verify that the paraphrase correctly *reads* it. A real quote paired with a wrong interpretation (a *misread*) is a distinct failure mode that grounding does not catch — it requires evaluation, not verification.
 - **Extraction recall is not guaranteed.** Grounding constrains the *precision* of citations, not the *completeness* of extraction; the model may still miss requirements.
-- **Fuzzy matching is a tradeoff.** `FUZZY_MATCH_THRESHOLD` trades false accepts against false rejects; it is tunable.
+- **Matching is strict by design — no similarity scoring.** A quote verifies only if every character corresponds to the source (verbatim, or after unifying whitespace/typographic quotes/dashes/case). A genuine quote with even a small transcription error is rejected into the visible *Excluded* list rather than risk certifying an altered obligation. See `DECISIONS.md` §5.
 - **Cross-references are out of scope.** Obligations that live in a document the APL points to (but does not contain) are not resolved.
 - **Text only.** Tables, figures, and images are not interpreted in v1 — a requirement expressed *only* inside a table may be missed.
 
