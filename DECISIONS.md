@@ -34,17 +34,18 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ---
 
-## 3. No live PDF upload / parsing in v1
+## 3. In-app PDF upload behind a mandatory human-review gate
 
-**Decision:** Source documents are cleaned to plain text **offline** and seeded into the database. There is no in-app PDF upload or parser. A paste box handles ad-hoc text.
+**Decision:** The client can extract and clean a DHCS APL PDF **in the browser** (`client/src/lib/`, using `pdfjs-dist`) and drop the result into the paste box. That text is **provisional**: it becomes the canonical `full_text` only after the user reviews/edits it and clicks *Add document*. Offline seeding (`data/seed.ts`) and the paste box remain; PDF upload is a third, review-gated on-ramp. No server upload path, no OCR.
 
-**Why:**
+**Why this shape — and not a parser bolted straight onto the upload path:**
 - **Parsing a PDF is easy; parsing it *faithfully* is hard — and faithful is the only kind this product can use.** Getting *some* text out of a PDF is trivial. Getting text that matches the original **character-for-character** is not.
-- Real government PDFs fight you: they inject headers, footers, and page numbers mid-sentence; use multi-column layouts that scramble reading order; collapse tables into unusable runs of text; hyphenate words across line breaks; and carry ligatures, smart quotes, and odd whitespace. Scanned PDFs contain **no extractable text at all** and need OCR.
-- Our trust guarantee depends on the stored source text matching the citation exactly. **A dirty parse silently breaks verification**: a genuine requirement's verbatim quote won't be found in the mangled text, so it gets wrongly rejected into *Excluded*. The tool would look like it's working while quietly discarding real obligations.
-- On a **live upload there's no chance to inspect** the extracted text before it poisons the analysis. Pre-cleaning a controlled set offline lets us verify fidelity once, up front, and guarantees reliable citations from then on.
+- Real government PDFs fight you: they inject headers, footers, and page numbers mid-sentence; use multi-column layouts; hyphenate words across line breaks; and carry ligatures, smart quotes, and odd whitespace. Scanned PDFs contain **no extractable text at all** and need OCR.
+- Our trust guarantee depends on the stored source text matching the citation exactly. **A dirty parse silently breaks verification**: a genuine requirement's verbatim quote won't be found in mangled text, so it gets wrongly rejected into *Excluded* — the tool looks like it's working while quietly discarding real obligations.
+- The original objection to live upload was that *"there's no chance to inspect the extracted text before it poisons the analysis."* **The review gate is the answer to that objection.** Extraction lands in the editable paste box, a human confirms fidelity, and only then does it become the source of record. A lossy parse is never trusted on its own.
+- The cleaner is tuned to the **DHCS APL template, not a general PDF parser**: it classifies assembled lines by font size and position to drop the repeating page header and letterhead footer, strip inline footnote reference markers, and move footnotes to an appended section (`client/src/lib/assembleAplText.ts`). That line-assembly logic is **pure and unit-tested**; the pdfjs I/O is isolated in `cleanPdf.ts` and lazy-loaded so its payload never ships to view-only users.
 
-**When we'd revisit:** v2, as a deliberate ingestion pipeline with a validation/inspection step (and OCR for scanned docs) — *not* a parser bolted onto the upload path. Robust, inspectable ingestion is its own project, and it deserves to be treated as one. Until then, the paste box covers ad-hoc input without a parser.
+**Still out of scope:** OCR for scanned documents (no text layer → the cleaner reports empty and asks the user to paste manually), and structure-aware **table** extraction (§4). Both remain their own projects.
 
 ---
 
@@ -79,4 +80,4 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ## The shape of these decisions
 
-Read together, the exclusions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, whole-document context, pre-verified source text) and cut what would quietly undermine it (fake policy matching, retrieval that severs cross-references, dirty parses, unlinearizable tables). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.
+Read together, these decisions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, whole-document context, a human-reviewed source text) and cut what would quietly undermine it (fake policy matching, retrieval that severs cross-references, *unreviewed* parses trusted as source, unlinearizable tables). PDF ingestion is allowed precisely because it's gated on human review rather than trusted blindly (§3). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.

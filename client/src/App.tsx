@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { api } from './api';
 import { ExportButton } from './components/ExportButton';
 import { ResultsPane } from './components/ResultsPane';
@@ -24,6 +30,9 @@ export default function App() {
   const [showPaste, setShowPaste] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [pasteTitle, setPasteTitle] = useState('');
+  const [fromPdf, setFromPdf] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const refreshList = useCallback(async () => {
     try {
@@ -103,11 +112,39 @@ export default function App() {
       const { id } = await api.createApl(text, pasteTitle.trim() || undefined);
       setPasteText('');
       setPasteTitle('');
+      setFromPdf(false);
       setShowPaste(false);
       await refreshList();
       select(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  // Extract + clean a PDF in the browser, then drop the result into the paste
+  // box for review. The cleaned text only becomes the source of record once the
+  // user adds it — a lossy parse is never trusted on its own.
+  const onPickPdf = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // let the same file be re-selected later
+    if (!file) return;
+    setError(null);
+    setPdfBusy(true);
+    try {
+      // Load pdfjs on demand so its ~1.9 MB payload never ships to users who
+      // only view seeded APLs.
+      const { cleanPdf } = await import('./lib/cleanPdf');
+      const { text, aplNumber } = await cleanPdf(file);
+      setPasteText(text);
+      setPasteTitle(
+        aplNumber ? `APL ${aplNumber}` : file.name.replace(/\.pdf$/i, ''),
+      );
+      setFromPdf(true);
+      setShowPaste(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -176,6 +213,21 @@ export default function App() {
         >
           Paste text…
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => void onPickPdf(e)}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={pdfBusy}
+          className="rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink-soft transition hover:border-ink-faint hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {pdfBusy ? 'Reading PDF…' : 'Upload APL PDF…'}
+        </button>
         {detail?.apl.is_adhoc && (
           <span className="rounded border border-rule bg-paper px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint">
             Pasted
@@ -185,6 +237,13 @@ export default function App() {
 
       {showPaste && (
         <div className="border-b border-rule bg-surface px-6 py-4">
+          {fromPdf && (
+            <p className="mb-3 border-l-2 border-advisory-line bg-advisory-soft px-3 py-2 text-[12.5px] leading-5 text-advisory">
+              Extracted from PDF — review and correct the text before adding.
+              Cleaning a regulatory PDF is imperfect, and this becomes the
+              source of record grounding runs against only when you add it.
+            </p>
+          )}
           <input
             value={pasteTitle}
             onChange={(e) => setPasteTitle(e.target.value)}

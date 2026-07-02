@@ -11,7 +11,7 @@ ClauseTrace turns a single regulatory letter — a California DHCS **All Plan Le
 1. **Ungrounded model output must NEVER reach the user as a trusted requirement.** Verification is mandatory and **deterministic** — it lives in `server/src/grounding/`, not in prompts. Trust is decided by code, not by the model's say-so.
 2. **Maintain the four-category trust taxonomy** — `grounded` / `abstained` / `excluded` / `generated` — in both the data model and the UI. Never let a source-verified claim look or read the same as generated advisory content (summary, action items).
 3. **No RAG, no vector database, no embeddings.** A whole APL fits in the model's context window; retrieval would sever cross-references between requirements and *lower* accuracy. Do not add retrieval infrastructure. No embeddings model and no vector operations anywhere in the codebase.
-4. **No auth, accounts, or multi-tenancy. No live PDF upload/parsing in v1.** Source text is pre-cleaned to plain text offline and seeded into the DB; a paste box covers ad-hoc input. Faithful parsing (not just parsing) is a deliberate v2 problem.
+4. **No auth, accounts, or multi-tenancy.** Source text can come from cleaned plain text seeded offline, the paste box, or a PDF the user uploads. **PDF extraction is lossy, so it is never trusted blindly:** the client extracts + cleans the PDF and drops the result into the paste box for the user to review/edit, and only that reviewed text becomes the canonical `full_text`. A human always approves the source before grounding runs against it.
 5. **The stored APL `full_text` is the canonical citation reference.** All offsets are computed against it and nothing else is grounded against anything else.
 6. **All LLM access goes through the `LLMClient` interface** (`llm/client.ts`). Provider/model come from env (`LLM_PROVIDER`, `LLM_MODEL`) and are swappable in one place. The OpenAI SDK is imported and called **only** inside `server/src/llm/`.
 7. **All model output is validated against zod schemas** (`llm/schemas.ts`) on receipt, with **one** repair re-prompt on schema failure, then fail with a clear message. Use OpenAI **strict structured output** — but remember strict mode guarantees output *shape*, never *truth of contents*; closing that gap is exactly the grounding layer's job.
@@ -45,7 +45,9 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   /domain                  departments.ts (controlled vocabulary)
   /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts
 /server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts
-/client/src                App.tsx (?apl=<id> share URLs), api.ts, types.ts,
+/client/src                App.tsx (?apl=<id> share URLs; PDF upload → review-in-paste-box), api.ts, types.ts,
+                           /lib (cleanPdf.ts = pdfjs extraction; assembleAplText.ts = PURE, unit-tested
+                                 DHCS-APL cleaner: header/footer/footnote/marker handling)
                            /components (SourcePane, ResultsPane, RequirementCard, AbstainedList,
                            ExcludedList, ActionItemList, StatusSteps, ExportButton, Badge)
 /data/apls                 <apl_number>.txt + metadata.json
@@ -96,7 +98,8 @@ eslint.config.js           eslint + prettier (npm run lint)
 - Do **not** add retrieval, embeddings, or a vector store. See `DECISIONS.md`.
 - Do **not** call the OpenAI SDK (or any LLM) outside `server/src/llm/`.
 - Do **not** present unverified model output as a trusted requirement, or blur grounded vs. generated content in data or UI.
-- Do **not** add authentication or live PDF parsing in v1.
+- Do **not** add authentication in v1.
+- Do **not** let raw PDF-extracted text become canonical `full_text` without passing through the paste-box review step — a lossy parse is never trusted unreviewed.
 - Do **not** put grounding/verification logic behind an LLM call — it is always deterministic code.
 
 Full rationale for these exclusions lives in `DECISIONS.md`.
