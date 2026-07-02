@@ -73,14 +73,14 @@ export function ExportButton({
       <button
         type="button"
         onClick={copy}
-        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50"
+        className="rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink-soft transition hover:border-ink-faint hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
       >
         {copied ? 'Copied ✓' : 'Copy checklist'}
       </button>
       <button
         type="button"
         onClick={download}
-        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50"
+        className="rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink-soft transition hover:border-ink-faint hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
       >
         Download .md
       </button>

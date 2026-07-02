@@ -1,5 +1,6 @@
 import type { Requirement } from '../types';
 import { Badge } from './Badge';
+import { SectionHeader } from './SectionHeader';
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
 
@@ -17,32 +18,32 @@ export function ActionItemList({ grounded }: { grounded: Requirement[] }) {
 
   return (
     <section>
-      <div className="mb-2 flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-slate-700">
-          Action-item checklist
-        </h3>
-        <Badge kind="generated">Generated · advisory</Badge>
-      </div>
-      <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4">
-        <ul className="space-y-2">
+      <SectionHeader
+        label="Action-item checklist"
+        aside={<Badge kind="generated">Generated · advisory</Badge>}
+      />
+      <div className="rounded-xl border border-advisory-line/60 border-l-[3px] border-l-advisory bg-advisory-soft/40 p-4">
+        <ul className="space-y-2.5">
           {items.map(({ item, ordinal }, i) => (
-            <li key={i} className="flex gap-2 text-sm leading-6 text-slate-700">
+            <li
+              key={i}
+              className="flex gap-2.5 text-[13.5px] leading-6 text-ink-soft"
+            >
               <span
-                className={`mt-1 shrink-0 rounded px-1.5 text-[11px] font-semibold uppercase ${
+                className={`mt-0.5 shrink-0 rounded font-mono text-[10px] font-semibold uppercase tracking-[0.06em] ${
                   item.priority === 'high'
-                    ? 'bg-rose-100 text-rose-700'
+                    ? 'bg-flagged-soft text-flagged'
                     : item.priority === 'medium'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-slate-200 text-slate-600'
-                }`}
+                      ? 'bg-advisory-soft text-advisory'
+                      : 'bg-rule-soft text-ink-faint'
+                } px-1.5 py-0.5`}
               >
                 {item.priority}
               </span>
               <span>
                 {item.text}{' '}
-                <span className="text-xs text-slate-500">
-                  — {item.suggested_owner_department} · from requirement #
-                  {ordinal}
+                <span className="font-mono text-[11px] text-ink-faint">
+                  — {item.suggested_owner_department} · req #{ordinal}
                 </span>
               </span>
             </li>

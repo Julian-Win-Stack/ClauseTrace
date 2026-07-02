@@ -1,1 +1,75 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: 'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Ink & paper — an official record on warm bond paper, not slate SaaS. */
+  --color-ink: #16223b;
+  --color-ink-soft: #45526b;
+  --color-ink-faint: #8a93a4;
+  --color-paper: #faf9f5;
+  --color-surface: #ffffff;
+  --color-rule: #e7e3d8;
+  --color-rule-soft: #f1ede2;
+
+  /* Trust semantics — muted printed-ink tones, one per trust category. */
+  --color-verified: #0f7a5c;
+  --color-verified-soft: #e6f1ec;
+  --color-verified-line: #c3e0d3;
+  --color-advisory: #a66a10;
+  --color-advisory-soft: #f7efdd;
+  --color-advisory-line: #ecd9af;
+  --color-flagged: #a3341f;
+  --color-flagged-soft: #f6e8e3;
+  --color-flagged-line: #e6c3b8;
+  --color-abstain: #6a675d;
+  --color-abstain-soft: #efece4;
+
+  --color-marker: #ffe39c;
+  --color-marker-line: #e2ad34;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background-color: var(--color-paper);
+  }
+  ::selection {
+    background: var(--color-marker);
+    color: var(--color-ink);
+  }
+}
+
+@keyframes ct-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: ct-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

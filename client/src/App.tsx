@@ -120,15 +120,22 @@ export default function App() {
     return `${prefix}${a.title}${a.analyzed ? ' ✓' : ''}`;
   };
 
+  const analyzeLabel = running
+    ? 'Analyzing…'
+    : detail?.analysis
+      ? 'Re-analyze'
+      : 'Analyze';
+
   return (
-    <div className="flex h-screen flex-col bg-slate-100">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-lg font-semibold tracking-tight text-slate-900">
+    <div className="flex h-screen flex-col bg-paper text-ink">
+      <header className="flex items-center justify-between gap-4 border-b border-rule bg-surface px-6 py-3.5">
+        <div className="flex items-center gap-3">
+          <h1 className="font-serif text-[22px] font-semibold leading-none tracking-tight text-ink">
             ClauseTrace
           </h1>
-          <p className="text-sm text-slate-500">
-            source-verified regulatory breakdowns
+          <span className="hidden h-4 w-px bg-rule sm:block" />
+          <p className="hidden font-mono text-[10.5px] uppercase tracking-[0.16em] text-ink-faint sm:block">
+            source-verified regulatory analysis
           </p>
         </div>
         {detail && analysis && (
@@ -136,13 +143,16 @@ export default function App() {
         )}
       </header>
 
-      <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-6 py-3">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-rule bg-surface px-6 py-3">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-faint">
+          Document
+        </span>
         <select
           value={selectedId ?? ''}
           onChange={(e) =>
             select(e.target.value ? Number(e.target.value) : null)
           }
-          className="max-w-md rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800"
+          className="max-w-md rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink transition hover:border-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
         >
           <option value="">Select a document…</option>
           {apls.map((a) => (
@@ -155,44 +165,44 @@ export default function App() {
           type="button"
           onClick={() => void analyze()}
           disabled={selectedId === null || running}
-          className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition hover:bg-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {running ? 'Analyzing…' : detail?.analysis ? 'Re-analyze' : 'Analyze'}
+          {analyzeLabel}
         </button>
         <button
           type="button"
           onClick={() => setShowPaste((v) => !v)}
-          className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50"
+          className="rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink-soft transition hover:border-ink-faint hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
         >
           Paste text…
         </button>
         {detail?.apl.is_adhoc && (
-          <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
-            Pasted document
+          <span className="rounded border border-rule bg-paper px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint">
+            Pasted
           </span>
         )}
       </div>
 
       {showPaste && (
-        <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <div className="border-b border-rule bg-surface px-6 py-4">
           <input
             value={pasteTitle}
             onChange={(e) => setPasteTitle(e.target.value)}
             placeholder="Title (optional)"
-            className="mb-2 w-full max-w-md rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            className="mb-2 w-full max-w-md rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
           />
           <textarea
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             placeholder="Paste regulatory letter text here…"
             rows={8}
-            className="mb-2 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-xs"
+            className="mb-2 w-full rounded-lg border border-rule bg-surface px-3 py-2 font-mono text-[12px] leading-5 text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
           />
           <button
             type="button"
             onClick={() => void submitPaste()}
             disabled={!pasteText.trim()}
-            className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-40"
+            className="rounded-lg bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition hover:bg-ink-soft disabled:opacity-40"
           >
             Add document
           </button>
@@ -200,44 +210,57 @@ export default function App() {
       )}
 
       {error && (
-        <div className="border-b border-rose-200 bg-rose-50 px-6 py-2 text-sm text-rose-700">
+        <div className="border-b border-flagged-line bg-flagged-soft px-6 py-2 font-mono text-[12.5px] text-flagged">
           {error}
         </div>
       )}
       {warnings.map((w) => (
         <div
           key={w}
-          className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-sm text-amber-800"
+          className="border-b border-advisory-line bg-advisory-soft px-6 py-2 text-[13px] text-advisory"
         >
           {w}
         </div>
       ))}
 
       <main className="flex min-h-0 flex-1">
-        <section className="w-1/2 overflow-y-auto border-r border-slate-200 bg-white p-6">
-          {detail ? (
-            <SourcePane text={detail.apl.full_text} highlight={highlight} />
-          ) : (
-            <p className="text-sm text-slate-400">
-              {apls.length === 0
-                ? 'No documents yet — paste one above, or seed APLs with `npm run db:seed`.'
-                : 'Select a document to view its text.'}
-            </p>
-          )}
+        <section className="w-1/2 overflow-y-auto border-r border-rule bg-surface">
+          <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-rule-soft bg-surface/95 px-6 py-2 backdrop-blur">
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-faint">
+              Source · full_text
+            </span>
+            {detail && (
+              <span className="ml-auto font-mono text-[10.5px] text-ink-faint">
+                {detail.apl.char_length.toLocaleString()} chars
+              </span>
+            )}
+          </div>
+          <div className="p-6">
+            {detail ? (
+              <SourcePane text={detail.apl.full_text} highlight={highlight} />
+            ) : (
+              <p className="mt-16 text-center font-mono text-[12.5px] leading-6 text-ink-faint">
+                {apls.length === 0
+                  ? 'No documents yet — paste one above,\nor seed APLs with `npm run db:seed`.'
+                  : 'Select a document to view its text.'}
+              </p>
+            )}
+          </div>
         </section>
         <section className="w-1/2 overflow-y-auto p-6">
           {running ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-6">
-              <h3 className="mb-3 text-sm font-semibold text-slate-700">
-                Analyzing…
-              </h3>
+            <div className="animate-rise rounded-xl border border-rule bg-surface p-6">
+              <div className="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-faint">
+                Analyzing
+              </div>
               <StatusSteps />
             </div>
           ) : analysis ? (
             <ResultsPane analysis={analysis} onHighlight={setHighlight} />
           ) : detail ? (
-            <p className="text-sm text-slate-400">
-              Not analyzed yet — click <b>Analyze</b>.
+            <p className="mt-16 text-center text-[13.5px] text-ink-faint">
+              Not analyzed yet — click{' '}
+              <span className="font-medium text-ink-soft">Analyze</span>.
             </p>
           ) : null}
         </section>

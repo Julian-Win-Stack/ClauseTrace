@@ -4,6 +4,29 @@ import { ActionItemList } from './ActionItemList';
 import { Badge } from './Badge';
 import { ExcludedList } from './ExcludedList';
 import { RequirementCard } from './RequirementCard';
+import { SectionHeader } from './SectionHeader';
+
+function LedgerStat({
+  count,
+  label,
+  color,
+}: {
+  count: number;
+  label: string;
+  color: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className={`h-2 w-2 rounded-full ${color}`} />
+      <span className="font-mono text-[13px] font-semibold text-ink">
+        {count}
+      </span>
+      <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink-faint">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export function ResultsPane({
   analysis,
@@ -19,26 +42,51 @@ export function ResultsPane({
   const excluded = byStatus('excluded');
 
   return (
-    <div className="space-y-6">
+    <div className="animate-rise space-y-7">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-rule bg-surface px-4 py-3">
+        <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.14em] text-ink-faint">
+          Trust ledger
+        </span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <LedgerStat
+            count={grounded.length}
+            label="grounded"
+            color="bg-verified"
+          />
+          <LedgerStat
+            count={abstained.length}
+            label="abstained"
+            color="bg-abstain"
+          />
+          <LedgerStat
+            count={excluded.length}
+            label="excluded"
+            color="bg-flagged"
+          />
+        </div>
+      </div>
+
       {analysis.summary && (
         <section>
-          <div className="mb-2 flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-700">Summary</h3>
-            <Badge kind="generated">Generated</Badge>
-          </div>
-          <p className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4 text-sm leading-6 text-slate-700">
+          <SectionHeader
+            label="Summary"
+            aside={<Badge kind="generated">Generated</Badge>}
+          />
+          <p className="rounded-xl border border-advisory-line/60 border-l-[3px] border-l-advisory bg-advisory-soft/40 p-4 text-[14px] leading-6 text-ink-soft">
             {analysis.summary}
           </p>
         </section>
       )}
 
       <section>
-        <h3 className="mb-2 text-sm font-semibold text-slate-700">
-          Requirements{' '}
-          <span className="font-normal text-slate-400">
-            ({grounded.length} grounded)
-          </span>
-        </h3>
+        <SectionHeader
+          label="Requirements"
+          aside={
+            <span className="font-mono text-[11px] text-ink-faint">
+              {grounded.length} grounded
+            </span>
+          }
+        />
         {grounded.length > 0 ? (
           <div className="space-y-3">
             {grounded.map((req) => (
@@ -50,8 +98,8 @@ export function ResultsPane({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">
-            No grounded requirements were extracted from this document.
+          <p className="rounded-xl border border-dashed border-rule bg-surface px-4 py-6 text-center text-[13.5px] text-ink-faint">
+            No grounded requirements were verified in this document.
           </p>
         )}
       </section>

@@ -1,9 +1,9 @@
 const STYLES = {
-  grounded: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  abstained: 'bg-slate-100 text-slate-600 ring-slate-500/20',
-  excluded: 'bg-rose-50 text-rose-700 ring-rose-600/20',
-  generated: 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
-  neutral: 'bg-slate-50 text-slate-500 ring-slate-400/20',
+  grounded: 'bg-verified-soft text-verified ring-verified/20',
+  abstained: 'bg-abstain-soft text-abstain ring-abstain/20',
+  excluded: 'bg-flagged-soft text-flagged ring-flagged/20',
+  generated: 'bg-advisory-soft text-advisory ring-advisory/20',
+  neutral: 'bg-rule-soft text-ink-faint ring-ink-faint/20',
 } as const;
 
 export type BadgeKind = keyof typeof STYLES;
@@ -17,7 +17,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset ${STYLES[kind]}`}
+      className={`inline-flex items-center gap-1 rounded font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset ${STYLES[kind]} px-1.5 py-0.5`}
     >
       {children}
     </span>

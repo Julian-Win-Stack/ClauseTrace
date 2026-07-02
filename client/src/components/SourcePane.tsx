@@ -17,13 +17,13 @@ export function SourcePane({
   }, [highlight]);
 
   return (
-    <div className="whitespace-pre-wrap font-serif text-[15px] leading-7 text-slate-800">
+    <div className="whitespace-pre-wrap font-serif text-[15.5px] leading-7 text-ink-soft">
       {highlight ? (
         <>
           {text.slice(0, highlight.start)}
           <mark
             ref={markRef}
-            className="rounded-sm bg-amber-200 px-0.5 py-0.5 ring-1 ring-amber-400"
+            className="rounded-sm bg-marker px-0.5 py-0.5 text-ink shadow-[inset_0_-2px_0_var(--color-marker-line)]"
           >
             {text.slice(highlight.start, highlight.end)}
           </mark>
