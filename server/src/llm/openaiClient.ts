@@ -8,8 +8,11 @@ export class OpenAIClient implements LLMClient {
   private readonly model: string;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    this.model = process.env.LLM_MODEL ?? 'gpt-5.5';
+    this.openai = new OpenAI({
+      apiKey: process.env.AZURE_OPENAI_API_KEY,
+      baseURL: process.env.AZURE_OPENAI_BASE_URL,
+    });
+    this.model = process.env.AZURE_OPENAI_MODEL ?? 'gpt-5.5';
   }
 
   async structuredCall<T>(options: StructuredCallOptions<T>): Promise<T> {
