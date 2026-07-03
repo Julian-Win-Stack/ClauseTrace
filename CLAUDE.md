@@ -10,13 +10,12 @@ ClauseTrace turns a single regulatory letter — a California DHCS **All Plan Le
 
 1. **Ungrounded model output must NEVER reach the user as a trusted requirement.** Verification is mandatory and **deterministic** — it lives in `server/src/grounding/`, not in prompts. Trust is decided by code, not by the model's say-so.
 2. **Maintain the four-category trust taxonomy** — `grounded` / `abstained` / `excluded` / `generated` — in both the data model and the UI. Never let a source-verified claim look or read the same as generated advisory content (summary, action items).
-3. **No RAG, no vector database, no embeddings.** A whole APL fits in the model's context window; retrieval would sever cross-references between requirements and *lower* accuracy. Do not add retrieval infrastructure. No embeddings model and no vector operations anywhere in the codebase.
-4. **No auth, accounts, or multi-tenancy.** Source text can come from cleaned plain text seeded offline, the paste box, or a PDF the user uploads. **PDF extraction is lossy, so it is never trusted blindly:** the client extracts + cleans the PDF and drops the result into the paste box for the user to review/edit, and only that reviewed text becomes the canonical `full_text`. A human always approves the source before grounding runs against it.
-5. **The stored APL `full_text` is the canonical citation reference.** All offsets are computed against it and nothing else is grounded against anything else.
-6. **All LLM access goes through the `LLMClient` interface** (`llm/client.ts`). Provider/model come from env (`LLM_PROVIDER`, `LLM_MODEL`) and are swappable in one place. The OpenAI SDK is imported and called **only** inside `server/src/llm/`.
-7. **All model output is validated against zod schemas** (`llm/schemas.ts`) on receipt, with **one** repair re-prompt on schema failure, then fail with a clear message. Use OpenAI **strict structured output** — but remember strict mode guarantees output *shape*, never *truth of contents*; closing that gap is exactly the grounding layer's job.
-8. **Errors are classified before any retry** (`lib/errors.ts`): retryable (rate-limit/5xx/network) → capped exponential backoff; schema-invalid → one repair then fail; auth/quota (401/403) → fail fast. Individual LLM calls and the overall analysis have timeouts.
-9. **Results are persisted so an analysis can be revisited/shared. There is no crash recovery and no run-status table — a failed run is simply re-run.** Re-analyzing an APL **replaces** its previous analysis. Non-critical stages (department classification, action items) degrade to a `warnings` array rather than failing the whole run; critical stages (extraction + grounding) do not.
+3. **No auth, accounts, or multi-tenancy.** Source text can come from cleaned plain text seeded offline, the paste box, or a PDF the user uploads. **PDF extraction is lossy, so it is never trusted blindly:** the client extracts + cleans the PDF and drops the result into the paste box for the user to review/edit, and only that reviewed text becomes the canonical `full_text`. A human always approves the source before grounding runs against it.
+4. **The stored APL `full_text` is the canonical citation reference.** All offsets are computed against it and nothing else is grounded against anything else.
+5. **All LLM access goes through the `LLMClient` interface** (`llm/client.ts`). Provider/model come from env (`LLM_PROVIDER`, `LLM_MODEL`) and are swappable in one place. The OpenAI SDK is imported and called **only** inside `server/src/llm/`.
+6. **All model output is validated against zod schemas** (`llm/schemas.ts`) on receipt, with **one** repair re-prompt on schema failure, then fail with a clear message. Use OpenAI **strict structured output** — but remember strict mode guarantees output *shape*, never *truth of contents*; closing that gap is exactly the grounding layer's job.
+7. **Errors are classified before any retry** (`lib/errors.ts`): retryable (rate-limit/5xx/network) → capped exponential backoff; schema-invalid → one repair then fail; auth/quota (401/403) → fail fast. Individual LLM calls and the overall analysis have timeouts.
+8. **Results are persisted so an analysis can be revisited/shared. There is no crash recovery and no run-status table — a failed run is simply re-run.** Re-analyzing an APL **replaces** its previous analysis. Non-critical stages (department classification, action items) degrade to a `warnings` array rather than failing the whole run; critical stages (extraction + grounding) do not.
 
 ## Commands
 
@@ -40,7 +39,7 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
                            classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
                            attachFaithfulness.ts (non-critical advisory pass; concurrency-8; degrades to warnings[])
   /grounding               verifyQuote.ts  ← MOST IMPORTANT FILE. Pure, deterministic, unit-tested.
-                           offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §5)
+                           offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §4)
   /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts,
                            faithfulness.ts (the advisory faithfulness LLM call)
   /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql, migrations/002_multi_span_faithfulness.sql
@@ -100,7 +99,6 @@ eslint.config.js           eslint + prettier (npm run lint)
 
 ## What NOT to do
 
-- Do **not** add retrieval, embeddings, or a vector store. See `DECISIONS.md`.
 - Do **not** call the OpenAI SDK (or any LLM) outside `server/src/llm/`.
 - Do **not** present unverified model output as a trusted requirement, or blur grounded vs. generated content in data or UI.
 - Do **not** add authentication in v1.

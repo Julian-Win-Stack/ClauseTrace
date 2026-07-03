@@ -112,4 +112,4 @@ Read these honestly — they define the edges of what the tool guarantees.
 
 ## Scope & decisions
 
-Several capabilities are **deliberately** excluded from v1: matching requirements against an organization's internal policies, RAG/vector/embeddings, live PDF upload/parsing, and table/figure handling. These are reasoned engineering choices, not gaps. The full rationale — what was excluded, why, and when it would be revisited — is in [`DECISIONS.md`](DECISIONS.md). The authoritative specification is in [`SPEC.md`](SPEC.md); repo conventions and invariants for contributors (and AI agents) are in [`CLAUDE.md`](CLAUDE.md).
+Several capabilities are **deliberately** excluded from v1: matching requirements against an organization's internal policies, live PDF upload/parsing, and table/figure handling. These are reasoned engineering choices, not gaps. The full rationale — what was excluded, why, and when it would be revisited — is in [`DECISIONS.md`](DECISIONS.md). The authoritative specification is in [`SPEC.md`](SPEC.md); repo conventions and invariants for contributors (and AI agents) are in [`CLAUDE.md`](CLAUDE.md).

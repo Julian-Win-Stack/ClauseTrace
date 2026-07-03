@@ -16,25 +16,11 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 - It is a **fundamentally different problem** from our core. Grounded extraction from a single public document is about *precision against one known text*. Policy matching is *retrieval and comparison across a large private corpus* — different data, different infrastructure, different failure modes.
 - Coarse **impacted departments** are genuinely inferable from the letter's language, so we keep them. Matching to *specific* internal policies is what's excluded — we don't blur "this touches Utilization Management" (inferable) with "this conflicts with your UM Policy 4.2" (unknowable without your files).
 
-**When we'd revisit:** as a separate, opt-in product surface where a customer supplies their own P&P corpus. That is the one place RAG would be warranted (see §2) — searching across *many* private documents. It is out of scope here by design, not by accident.
+**When we'd revisit:** as a separate, opt-in product surface where a customer supplies their own P&P corpus. That is the one place RAG would be warranted — searching across *many* private documents. It is out of scope here by design, not by accident.
 
 ---
 
-## 2. No RAG, no vector database, no embeddings
-
-**Decision:** The whole APL goes into the model's context. There is no chunking-for-retrieval, no embeddings model, and no vector store anywhere in the codebase.
-
-**Why:**
-- **Retrieval solves a problem we don't have.** RAG exists to work around a knowledge base too large to fit in context. A single APL — even a long one — fits comfortably in a modern model's context window. There is nothing to retrieve *from*; the whole document is already in front of the model.
-- **On a single cross-referenced regulation, chunking actively hurts accuracy.** Requirements in a regulation depend on each other — a rule in one section leans on a definition, exception, or condition stated in another. Splitting the document to retrieve fragments risks **severing those cross-references**, so the model reasons over an incomplete picture. That *lowers* accuracy — the exact failure mode this product must avoid.
-- **It would add infrastructure and new failure modes for zero benefit**: an embeddings pipeline, a vector store to run and keep in sync, chunk-boundary tuning, and retrieval-quality bugs — all to make the system *worse* at its one job.
-- Adding RAG here would be **cargo-culting a popular pattern** into a place it doesn't fit. Deliberately *not* using it is the correct engineering judgment, and we state it plainly so no future contributor "adds retrieval" thinking it's an obvious win.
-
-**When we'd revisit:** only when the task becomes searching across *many* documents — e.g. the excluded P&P-matching feature in §1. For single-document analysis, retrieval stays out permanently.
-
----
-
-## 3. In-app PDF upload behind a mandatory human-review gate
+## 2. In-app PDF upload behind a mandatory human-review gate
 
 **Decision:** The client can extract and clean a DHCS APL PDF **in the browser** (`client/src/lib/`, using `pdfjs-dist`) and drop the result into the paste box. That text is **provisional**: it becomes the canonical `full_text` only after the user reviews/edits it and clicks *Add document*. Offline seeding (`data/seed.ts`) and the paste box remain; PDF upload is a third, review-gated on-ramp. No server upload path, no OCR.
 
@@ -45,26 +31,26 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 - The original objection to live upload was that *"there's no chance to inspect the extracted text before it poisons the analysis."* **The review gate is the answer to that objection.** Extraction lands in the editable paste box, a human confirms fidelity, and only then does it become the source of record. A lossy parse is never trusted on its own.
 - The cleaner is tuned to the **DHCS APL template, not a general PDF parser**: it classifies assembled lines by font size and position to drop the repeating page header and letterhead footer, strip inline footnote reference markers, and move footnotes to an appended section (`client/src/lib/assembleAplText.ts`). That line-assembly logic is **pure and unit-tested**; the pdfjs I/O is isolated in `cleanPdf.ts` and lazy-loaded so its payload never ships to view-only users.
 
-**Still out of scope:** OCR for scanned documents (no text layer → the cleaner reports empty and asks the user to paste manually), and structure-aware **table** extraction (§4). Both remain their own projects.
+**Still out of scope:** OCR for scanned documents (no text layer → the cleaner reports empty and asks the user to paste manually), and structure-aware **table** extraction (§3). Both remain their own projects.
 
 ---
 
-## 4. No tables, figures, or images (text only)
+## 3. No tables, figures, or images (text only)
 
 **Decision:** v1 grounds against plain text only. Tables, figures, and images in source documents are not interpreted.
 
 **Why:**
 - **Regulatory tables don't linearize cleanly.** Timeframe grids, thresholds, and matrices lose their row/column meaning when flattened to a line of text, which would produce unreliable citations and offsets — the opposite of what grounding needs.
 - **Figures and images contain no text to ground against.** There is nothing for the verification layer to match a citation to.
-- Handling either *well* requires structure-aware parsing and OCR — the same class of work deferred in §3 — which is out of scope for a v1 focused squarely on the grounding core.
+- Handling either *well* requires structure-aware parsing and OCR — the same class of work deferred in §2 — which is out of scope for a v1 focused squarely on the grounding core.
 
 **Acknowledged limitation:** a requirement expressed **only** inside a table may be missed. This is stated honestly in the README's Limitations section rather than hidden.
 
-**When we'd revisit:** alongside the faithful-ingestion work in §3, with structure-aware extraction that preserves table semantics well enough to cite reliably.
+**When we'd revisit:** alongside the faithful-ingestion work in §2, with structure-aware extraction that preserves table semantics well enough to cite reliably.
 
 ---
 
-## 5. No fuzzy / similarity-based citation matching
+## 4. No fuzzy / similarity-based citation matching
 
 **Decision:** A `source_quote` is verified only when **every character corresponds to the source text** — either verbatim (`exact`) or after unifying whitespace runs, typographic quotes/dashes, and case (`normalized`). There is no similarity-scored fallback tier. Anything less than a full-content match is rejected into the visible *Excluded* list.
 
@@ -78,25 +64,25 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ---
 
-## 6. Multi-span citations — a requirement may cite several contiguous quotes
+## 5. Multi-span citations — a requirement may cite several contiguous quotes
 
 **Decision:** A requirement's supporting evidence is no longer a single contiguous quote. The model may return an **array of verbatim spans**, each verified independently against `full_text`. Grounding is **all-or-nothing**: a requirement is grounded only if *every* span verifies; if even one span fails, the whole requirement is Excluded. There is no cap on the number of spans and no minimum span length.
 
 **Why:**
 - **Real regulations split one obligation across separated passages.** On APL 24-009, a genuine requirement's support lived in two paragraphs with an unrelated paragraph in between. Forcing a *single* contiguous quote pushed the model to **glue the two halves into one string** — a string that does not exist verbatim in the source — so verification correctly rejected it and a real requirement landed in Excluded. The evidence was real; the single-quote constraint was the problem.
-- **It relaxes *how many* quotes evidence can span, not *how* a quote earns trust.** Every span still must appear (near-)verbatim, decided by the same deterministic verifier (§5). Letting the model return each true passage as its own span means each is checked on its own terms instead of being forced into one illegal concatenation.
+- **It relaxes *how many* quotes evidence can span, not *how* a quote earns trust.** Every span still must appear (near-)verbatim, decided by the same deterministic verifier (§4). Letting the model return each true passage as its own span means each is checked on its own terms instead of being forced into one illegal concatenation.
 - **All-or-nothing keeps the guarantee strict.** A requirement is only as trustworthy as its weakest span. If any cited span can't be found, we don't ground "most of it" — we exclude the whole requirement, visibly, exactly as before. Partial grounding is never allowed.
 
 **When we'd revisit:** if real APLs show the model grounding on garbage fragments (many tiny spans stitched together to fake coverage), we'd add a minimum span length or a span cap. Both are deliberately left off until a real document demonstrates the need.
 
 ---
 
-## 7. A second, advisory LLM pass — the faithfulness check
+## 6. A second, advisory LLM pass — the faithfulness check
 
 **Decision:** After grounding, a separate LLM call judges, per grounded requirement, whether the verified quote(s) actually **support the AI's paraphrase** of that requirement — every obligation, number, scope, and deadline in the paraphrase must be backed by the quotes. The verdict is `supported` or `needs_review` (with a specific reason on `needs_review`). It is **advisory only**: it can raise a ⚠ review flag but **can never change trust status or hide the green "Verified" badge.**
 
 **Why:**
-- **Verification and faithfulness catch different failures.** Verification (§5) is deterministic and asks only *does this quote exist in the source?* — it is blind to meaning. A quote can be 100% real and still be *described* wrongly: the model can attach a genuine quote to a paraphrase that overstates it (inventing a deadline, a duty, or a scope the quote doesn't state). Verification cannot see that gap; only a meaning-level check can. This is the *grounded-but-unfaithful* case — real citation, drifted description — and nothing else in the pipeline catches it.
+- **Verification and faithfulness catch different failures.** Verification (§4) is deterministic and asks only *does this quote exist in the source?* — it is blind to meaning. A quote can be 100% real and still be *described* wrongly: the model can attach a genuine quote to a paraphrase that overstates it (inventing a deadline, a duty, or a scope the quote doesn't state). Verification cannot see that gap; only a meaning-level check can. This is the *grounded-but-unfaithful* case — real citation, drifted description — and nothing else in the pipeline catches it.
 - **It must never decide trust.** Trust is decided by deterministic code, never by a model — the product's core invariant. So the faithfulness check is deliberately kept *outside* the trust decision: it is generated/advisory content, styled and stored as such. It flags for a human; it never green-lights or red-lights. This preserves the guarantee that a model's opinion cannot promote a requirement into trust or demote one out of it.
 - **Non-critical by design.** The check runs only on already-grounded requirements, one call each, fanned out in parallel. If it fails (LLM error, malformed output), the requirement stays grounded with no verdict and the failure degrades to a `warnings[]` entry — it never fails the run. An advisory layer must not be able to take down the pipeline or the trust it sits beside.
 
@@ -106,4 +92,4 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ## The shape of these decisions
 
-Read together, these decisions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, whole-document context, a human-reviewed source text) and cut what would quietly undermine it (fake policy matching, retrieval that severs cross-references, *unreviewed* parses trusted as source, unlinearizable tables). PDF ingestion is allowed precisely because it's gated on human review rather than trusted blindly (§3). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.
+Read together, these decisions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, a human-reviewed source text) and cut what would quietly undermine it (fake policy matching, *unreviewed* parses trusted as source, unlinearizable tables). PDF ingestion is allowed precisely because it's gated on human review rather than trusted blindly (§2). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.

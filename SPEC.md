@@ -42,7 +42,7 @@ The grounding layer is what implements this taxonomy. It rests on four design de
 2. **Verified grounding.** For every requirement, the model must return a `source_quote`: a span it claims is copied verbatim from the source. Deterministic code then **verifies that span actually exists** in the source text. If it does not, the requirement is **rejected** (moved to the *Excluded* category), never shown as trusted. When the span *is* verified, locating it yields a **character offset range** in the canonical source text — the same operation that confirms existence also gives the position — which the UI renders as a highlight in the source pane (click a requirement → its exact source passage lights up). The correctness guarantee lives in deterministic code, not in the (probabilistic) model; the highlight is that guarantee made visible, not UI polish. This is one step, not two: verify the citation, keep its location, reject what can't be verified.
 3. **Decomposition + abstention.** Hallucination most often appears when a model feels pressure to fill a gap; this design removes that pressure rather than only cleaning up after it. It shows up in three concrete places, not as an algorithm:
    - **In the prompts:** the model is explicitly told it may extract *nothing* for a section that imposes no new obligation, and must never fabricate a `source_quote` — if it can't cite verbatim supporting text, it omits the requirement. Permission to decline is written into the instructions.
-   - **In how the model is called:** requirements are extracted in **focused pieces** (e.g., section by section, or a "list topics, then extract per topic" pass) rather than one open-ended "give me everything" call that pressures the model to pad the list. This is chunking for *focus*, and is unrelated to retrieval/RAG (which is out of scope).
+   - **In how the model is called:** requirements are extracted in **focused pieces** (e.g., section by section, or a "list topics, then extract per topic" pass) rather than one open-ended "give me everything" call that pressures the model to pad the list. This is chunking for *focus*, not retrieval — every piece is processed; nothing is filtered out.
    - **In the output/pipeline:** there is a legitimate representation for "not stated / none," and the pipeline treats an empty or declined result as a **valid outcome, not an error.** Without this, the permission above would be meaningless.
 
    Abstention reduces how often the model invents; the verification layer (decision 2) is the backstop that rejects anything it asserts without a real citation. In v1 (extraction) the two overlap — a fabricated requirement usually dies at verification anyway — so abstention's main added value here is suppressing padding at the source. The exact mechanics are the implementing engineer's call.
@@ -68,7 +68,6 @@ A single-document pipeline over one APL at a time, producing:
 ### Explicitly out of scope
 
 - **No matching of requirements against an organization's internal policies (P&Ps).**
-- **No RAG, no vector database, no embeddings.** A single APL fits comfortably in a modern model's context window; retrieval is unnecessary and, on a single cross-referenced document, harmful.
 - **No authentication, accounts, or multi-tenancy.** Single-user tool.
 - **No live PDF upload / parsing in v1.** Source documents are pre-cleaned to text offline (see §11). A paste box is provided for ad-hoc text.
 - **No handling of tables, figures, or images** within documents (text only).
@@ -208,8 +207,6 @@ Re-analyzing a document **replaces** its analysis: delete the existing `requirem
   ]
 }
 ```
-
-No embeddings model is used. No vector operations exist anywhere in the codebase.
 
 ---
 
