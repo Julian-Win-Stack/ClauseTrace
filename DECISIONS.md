@@ -78,6 +78,32 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ---
 
+## 6. Multi-span citations — a requirement may cite several contiguous quotes
+
+**Decision:** A requirement's supporting evidence is no longer a single contiguous quote. The model may return an **array of verbatim spans**, each verified independently against `full_text`. Grounding is **all-or-nothing**: a requirement is grounded only if *every* span verifies; if even one span fails, the whole requirement is Excluded. There is no cap on the number of spans and no minimum span length.
+
+**Why:**
+- **Real regulations split one obligation across separated passages.** On APL 24-009, a genuine requirement's support lived in two paragraphs with an unrelated paragraph in between. Forcing a *single* contiguous quote pushed the model to **glue the two halves into one string** — a string that does not exist verbatim in the source — so verification correctly rejected it and a real requirement landed in Excluded. The evidence was real; the single-quote constraint was the problem.
+- **It relaxes *how many* quotes evidence can span, not *how* a quote earns trust.** Every span still must appear (near-)verbatim, decided by the same deterministic verifier (§5). Letting the model return each true passage as its own span means each is checked on its own terms instead of being forced into one illegal concatenation.
+- **All-or-nothing keeps the guarantee strict.** A requirement is only as trustworthy as its weakest span. If any cited span can't be found, we don't ground "most of it" — we exclude the whole requirement, visibly, exactly as before. Partial grounding is never allowed.
+
+**When we'd revisit:** if real APLs show the model grounding on garbage fragments (many tiny spans stitched together to fake coverage), we'd add a minimum span length or a span cap. Both are deliberately left off until a real document demonstrates the need.
+
+---
+
+## 7. A second, advisory LLM pass — the faithfulness check
+
+**Decision:** After grounding, a separate LLM call judges, per grounded requirement, whether the verified quote(s) actually **support the AI's paraphrase** of that requirement — every obligation, number, scope, and deadline in the paraphrase must be backed by the quotes. The verdict is `supported` or `needs_review` (with a specific reason on `needs_review`). It is **advisory only**: it can raise a ⚠ review flag but **can never change trust status or hide the green "Verified" badge.**
+
+**Why:**
+- **Verification and faithfulness catch different failures.** Verification (§5) is deterministic and asks only *does this quote exist in the source?* — it is blind to meaning. A quote can be 100% real and still be *described* wrongly: the model can attach a genuine quote to a paraphrase that overstates it (inventing a deadline, a duty, or a scope the quote doesn't state). Verification cannot see that gap; only a meaning-level check can. This is the *grounded-but-unfaithful* case — real citation, drifted description — and nothing else in the pipeline catches it.
+- **It must never decide trust.** Trust is decided by deterministic code, never by a model — the product's core invariant. So the faithfulness check is deliberately kept *outside* the trust decision: it is generated/advisory content, styled and stored as such. It flags for a human; it never green-lights or red-lights. This preserves the guarantee that a model's opinion cannot promote a requirement into trust or demote one out of it.
+- **Non-critical by design.** The check runs only on already-grounded requirements, one call each, fanned out in parallel. If it fails (LLM error, malformed output), the requirement stays grounded with no verdict and the failure degrades to a `warnings[]` entry — it never fails the run. An advisory layer must not be able to take down the pipeline or the trust it sits beside.
+
+**When we'd revisit:** the check is one model's judgment and can itself err — miss a real drift, or over-flag a faithful paraphrase. If flag quality proves unreliable on real APLs, we'd tighten the prompt, add a second judge, or require agreement between judges. It stays advisory in every case: it will never become a gate on the green badge, which remains the deterministic verifier's job alone.
+
+---
+
 ## The shape of these decisions
 
 Read together, these decisions aren't a list of missing features — they're a boundary drawn on purpose around a single, defensible core: **grounded extraction from one faithful source text.** We kept what strengthens that guarantee (coarse impacted departments, whole-document context, a human-reviewed source text) and cut what would quietly undermine it (fake policy matching, retrieval that severs cross-references, *unreviewed* parses trusted as source, unlinearizable tables). PDF ingestion is allowed precisely because it's gated on human review rather than trusted blindly (§3). Each cut has a revisit condition, so the scope is a starting line, not a ceiling.

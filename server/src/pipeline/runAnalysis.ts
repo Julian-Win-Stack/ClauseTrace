@@ -17,6 +17,7 @@ import {
   analysisResponseSchema,
   type AnalysisResponse,
 } from '../llm/schemas.js';
+import { attachFaithfulness } from './attachFaithfulness.js';
 import { classifyRequirement } from './classifyRequirement.js';
 
 const CALL_TIMEOUT_MS = 180_000;
@@ -83,7 +84,10 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     classifyRequirement(req, apl.full_text),
   );
 
-  const warnings: string[] = [];
+  const { requirements, warnings: faithfulnessWarnings } =
+    await attachFaithfulness(llm, classified);
+
+  const warnings: string[] = [...faithfulnessWarnings];
   const discarded = classified.reduce(
     (sum, req) => sum + req.discarded_action_items,
     0,
@@ -94,7 +98,7 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     );
   }
 
-  await saveAnalysis(aplId, response.summary, classified);
+  await saveAnalysis(aplId, response.summary, requirements);
   logger.info('analysis saved', {
     aplId,
     requirements: classified.length,

@@ -39,11 +39,16 @@ export function ExcludedList({ items }: { items: Requirement[] }) {
               <p className="mb-1 text-[13.5px] leading-6 text-ink-soft">
                 {req.requirement_text}
               </p>
-              {req.source_quote && (
-                <p className="font-mono text-[11.5px] leading-5 text-ink-faint">
-                  claimed quote, not found in source: “{req.source_quote}”
-                </p>
-              )}
+              {req.citations
+                .filter((c) => !c.verified)
+                .map((c, i) => (
+                  <p
+                    key={i}
+                    className="font-mono text-[11.5px] leading-5 text-ink-faint"
+                  >
+                    claimed quote, not found in source: “{c.quote}”
+                  </p>
+                ))}
             </div>
           ))}
         </div>

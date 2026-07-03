@@ -17,15 +17,22 @@ function buildMarkdown(apl: Apl, analysis: Analysis): string {
   ];
   for (const req of grounded) {
     lines.push(`### ${req.ordinal}. ${req.requirement_text}`, '');
-    if (req.source_quote) {
-      lines.push(`> “${req.source_quote}”`, '');
+    const verified = req.citations.filter((c) => c.verified);
+    for (const citation of verified) {
+      lines.push(`> “${citation.quote}”`, '');
     }
+    const methodSummary = verified.some((c) => c.method === 'normalized')
+      ? 'normalized'
+      : 'exact';
     lines.push(
-      `*Verified: ${req.verification_method}* — Departments: ${
+      `*Verified: ${methodSummary}* — Departments: ${
         req.impacted_departments.join(', ') || '—'
       }`,
       '',
     );
+    if (req.faithfulness === 'needs_review' && req.faithfulness_reason) {
+      lines.push(`> ⚠ Needs review: ${req.faithfulness_reason}`, '');
+    }
     if (req.action_items.length > 0) {
       lines.push('**Action items (generated / advisory):**', '');
       for (const item of req.action_items) {

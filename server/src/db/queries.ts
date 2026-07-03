@@ -1,5 +1,6 @@
 import { pool } from './pool.js';
-import type { ClassifiedRequirement } from '../pipeline/classifyRequirement.js';
+import type { Citation } from '../pipeline/classifyRequirement.js';
+import type { RequirementForSave } from '../pipeline/attachFaithfulness.js';
 
 export interface AplListItem {
   id: number;
@@ -33,11 +34,10 @@ export interface ActionItemDto {
 export interface RequirementDto {
   ordinal: number;
   requirement_text: string;
-  source_quote: string | null;
   status: 'grounded' | 'abstained' | 'excluded';
-  verification_method: 'exact' | 'normalized' | 'none';
-  source_start_offset: number | null;
-  source_end_offset: number | null;
+  citations: Citation[];
+  faithfulness: 'supported' | 'needs_review' | null;
+  faithfulness_reason: string | null;
   impacted_departments: string[];
   action_items: ActionItemDto[];
 }
@@ -86,11 +86,10 @@ interface RequirementRow {
   id: number;
   ordinal: number;
   requirement_text: string;
-  source_quote: string | null;
   status: 'grounded' | 'abstained' | 'excluded';
-  verification_method: 'exact' | 'normalized' | 'none';
-  source_start_offset: number | null;
-  source_end_offset: number | null;
+  citations: Citation[];
+  faithfulness: 'supported' | 'needs_review' | null;
+  faithfulness_reason: string | null;
   impacted_departments: string[];
 }
 
@@ -103,9 +102,8 @@ export async function getAnalysis(aplId: number): Promise<AnalysisDto | null> {
   if (!aplRow || aplRow.analyzed_at === null) return null;
 
   const reqs = await pool.query<RequirementRow>(
-    `SELECT id, ordinal, requirement_text, source_quote, status,
-            verification_method, source_start_offset,
-            source_end_offset, impacted_departments
+    `SELECT id, ordinal, requirement_text, status, citations,
+            faithfulness, faithfulness_reason, impacted_departments
      FROM requirements WHERE apl_id = $1 ORDER BY ordinal`,
     [aplId],
   );
@@ -135,11 +133,10 @@ export async function getAnalysis(aplId: number): Promise<AnalysisDto | null> {
     requirements: reqs.rows.map((r) => ({
       ordinal: r.ordinal,
       requirement_text: r.requirement_text,
-      source_quote: r.source_quote,
       status: r.status,
-      verification_method: r.verification_method,
-      source_start_offset: r.source_start_offset,
-      source_end_offset: r.source_end_offset,
+      citations: r.citations,
+      faithfulness: r.faithfulness,
+      faithfulness_reason: r.faithfulness_reason,
       impacted_departments: r.impacted_departments,
       action_items: itemsByRequirement.get(r.id) ?? [],
     })),
@@ -154,7 +151,7 @@ export async function getAnalysis(aplId: number): Promise<AnalysisDto | null> {
 export async function saveAnalysis(
   aplId: number,
   summary: string,
-  requirements: ClassifiedRequirement[],
+  requirements: RequirementForSave[],
 ): Promise<void> {
   const client = await pool.connect();
   try {
@@ -163,20 +160,18 @@ export async function saveAnalysis(
     for (const [index, req] of requirements.entries()) {
       const inserted = await client.query<{ id: number }>(
         `INSERT INTO requirements
-           (apl_id, ordinal, requirement_text, source_quote, status,
-            verification_method, source_start_offset,
-            source_end_offset, impacted_departments)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           (apl_id, ordinal, requirement_text, status, citations,
+            faithfulness, faithfulness_reason, impacted_departments)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id`,
         [
           aplId,
           index + 1,
           req.requirement_text,
-          req.source_quote,
           req.status,
-          req.verification_method,
-          req.source_start_offset,
-          req.source_end_offset,
+          JSON.stringify(req.citations),
+          req.faithfulness,
+          req.faithfulness_reason,
           JSON.stringify(req.impacted_departments),
         ],
       );

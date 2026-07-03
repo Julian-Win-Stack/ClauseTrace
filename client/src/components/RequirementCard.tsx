@@ -7,32 +7,25 @@ export function RequirementCard({
   requirement: Requirement;
   onHighlight: (span: Span) => void;
 }) {
-  const { source_start_offset: start, source_end_offset: end } = requirement;
-  const clickable = start !== null && end !== null;
+  const verified = requirement.citations.filter((c) => c.verified);
 
   // The verification stamp makes the deterministic check visible — the product's
-  // whole thesis is that code, not the model, decided this quote is real.
+  // whole thesis is that code, not the model, decided these quotes are real.
+  const matchLabel = verified.some((c) => c.method === 'normalized')
+    ? 'normalized match'
+    : 'exact match';
   const stamp =
-    requirement.verification_method === 'normalized'
-      ? 'normalized match'
-      : 'exact match';
-  const offsets = clickable ? `offset ${start}–${end}` : null;
+    verified.length > 1
+      ? `${verified.length} passages · ${matchLabel}`
+      : matchLabel;
+
+  const needsReview =
+    requirement.faithfulness === 'needs_review'
+      ? requirement.faithfulness_reason
+      : null;
 
   return (
-    <article
-      className={`group relative overflow-hidden rounded-xl border border-rule border-l-[3px] border-l-verified bg-surface p-4 shadow-[0_1px_2px_rgba(22,34,59,0.04)] transition ${
-        clickable
-          ? 'cursor-pointer hover:-translate-y-px hover:shadow-[0_6px_16px_-8px_rgba(15,122,92,0.35)]'
-          : ''
-      }`}
-      onClick={() => {
-        if (clickable)
-          onHighlight({ start: start as number, end: end as number });
-      }}
-      title={
-        clickable ? 'Click to trace this to the source passage' : undefined
-      }
-    >
+    <article className="group relative overflow-hidden rounded-xl border border-rule border-l-[3px] border-l-verified bg-surface p-4 shadow-[0_1px_2px_rgba(22,34,59,0.04)]">
       <div className="mb-2.5 flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-verified">
           <svg
@@ -58,10 +51,7 @@ export function RequirementCard({
           </svg>
           Verified
         </span>
-        <span className="font-mono text-[10.5px] text-ink-faint">
-          {stamp}
-          {offsets ? ` · ${offsets}` : ''}
-        </span>
+        <span className="font-mono text-[10.5px] text-ink-faint">{stamp}</span>
         <span className="ml-auto font-mono text-[10.5px] text-ink-faint">
           REQ {String(requirement.ordinal).padStart(2, '0')}
         </span>
@@ -71,12 +61,39 @@ export function RequirementCard({
         {requirement.requirement_text}
       </p>
 
-      {requirement.source_quote && (
-        <blockquote className="mt-2.5 border-l-2 border-verified-line pl-3">
-          <span className="font-serif text-[14.5px] italic leading-6 text-ink-soft">
-            “{requirement.source_quote}”
-          </span>
-        </blockquote>
+      {verified.length > 0 && (
+        <div className="mt-2.5 space-y-2">
+          {verified.map((citation, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() =>
+                onHighlight({
+                  start: citation.start as number,
+                  end: citation.end as number,
+                })
+              }
+              title="Click to trace this to the source passage"
+              className="block w-full cursor-pointer border-l-2 border-verified-line pl-3 text-left transition hover:border-verified"
+            >
+              <span className="font-serif text-[14.5px] italic leading-6 text-ink-soft">
+                “{citation.quote}”
+              </span>
+              <span className="mt-1 block font-mono text-[10px] text-ink-faint opacity-0 transition group-hover:opacity-100">
+                → trace to source (offset {citation.start}–{citation.end})
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {needsReview && (
+        <div className="mt-3 rounded-lg border border-advisory-line/60 bg-advisory-soft/50 p-3">
+          <div className="mb-1 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-advisory">
+            ⚠ Needs review · advisory
+          </div>
+          <p className="text-[13px] leading-6 text-ink-soft">{needsReview}</p>
+        </div>
       )}
 
       {requirement.impacted_departments.length > 0 && (
@@ -122,12 +139,6 @@ export function RequirementCard({
               </li>
             ))}
           </ul>
-        </div>
-      )}
-
-      {clickable && (
-        <div className="mt-3 font-mono text-[10.5px] text-ink-faint opacity-0 transition group-hover:opacity-100">
-          → trace to source
         </div>
       )}
     </article>

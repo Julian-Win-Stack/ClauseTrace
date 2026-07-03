@@ -29,14 +29,21 @@ export interface ActionItem {
 
 export type RequirementStatus = 'grounded' | 'abstained' | 'excluded';
 
+export interface Citation {
+  quote: string;
+  verified: boolean;
+  start: number | null;
+  end: number | null;
+  method: 'exact' | 'normalized' | 'none';
+}
+
 export interface Requirement {
   ordinal: number;
   requirement_text: string;
-  source_quote: string | null;
   status: RequirementStatus;
-  verification_method: 'exact' | 'normalized' | 'none';
-  source_start_offset: number | null;
-  source_end_offset: number | null;
+  citations: Citation[];
+  faithfulness: 'supported' | 'needs_review' | null;
+  faithfulness_reason: string | null;
   impacted_departments: string[];
   action_items: ActionItem[];
 }

@@ -12,7 +12,7 @@ export const actionItemSchema = z.strictObject({
 
 export const extractedRequirementSchema = z.strictObject({
   requirement_text: z.string(),
-  source_quote: z.string(),
+  source_quotes: z.array(z.string()),
   impacted_departments: z.array(z.enum(DEPARTMENTS)),
   not_stated: z.boolean(),
   action_items: z.array(actionItemSchema),
@@ -21,14 +21,26 @@ export const extractedRequirementSchema = z.strictObject({
 /**
  * The single-call analysis response: summary + requirements (with nested
  * draft action items). Strict mode guarantees this *shape* only — whether a
- * source_quote really exists in the source is decided by grounding/, never
- * here.
+ * source_quotes span really exists in the source is decided by grounding/,
+ * never here.
  */
 export const analysisResponseSchema = z.strictObject({
   summary: z.string(),
   requirements: z.array(extractedRequirementSchema),
 });
 
+/**
+ * Advisory faithfulness verdict for one already-grounded requirement. This is
+ * generated content — it can flag a requirement for review but NEVER changes
+ * its trust status. `reason` is required by strict mode; it is "" when
+ * supported (persisted as null) and a specific sentence when needs_review.
+ */
+export const faithfulnessResponseSchema = z.strictObject({
+  verdict: z.enum(['supported', 'needs_review']),
+  reason: z.string(),
+});
+
 export type ExtractedActionItem = z.infer<typeof actionItemSchema>;
 export type ExtractedRequirement = z.infer<typeof extractedRequirementSchema>;
 export type AnalysisResponse = z.infer<typeof analysisResponseSchema>;
+export type FaithfulnessResponse = z.infer<typeof faithfulnessResponseSchema>;

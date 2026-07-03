@@ -37,14 +37,17 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   index.ts                 Express entry; serves built client in prod
   /routes                  apls.ts, analyze.ts
   /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
-                           classifyRequirement.ts (pure trust routing: verify → grounded/abstained/excluded)
+                           classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
+                           attachFaithfulness.ts (non-critical advisory pass; concurrency-8; degrades to warnings[])
   /grounding               verifyQuote.ts  ← MOST IMPORTANT FILE. Pure, deterministic, unit-tested.
                            offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §5)
-  /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts
-  /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql
+  /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts,
+                           faithfulness.ts (the advisory faithfulness LLM call)
+  /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql, migrations/002_multi_span_faithfulness.sql
   /domain                  departments.ts (controlled vocabulary)
-  /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts
-/server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts
+  /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts,
+                           concurrency.ts (mapWithConcurrency — bounded parallel, order-preserving)
+/server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts, attachFaithfulness.test.ts
 /client/src                App.tsx (?apl=<id> share URLs; PDF upload → review-in-paste-box), api.ts, types.ts,
                            /lib (cleanPdf.ts = pdfjs extraction; assembleAplText.ts = PURE, unit-tested
                                  DHCS-APL cleaner: header/footer/footnote/marker handling)
@@ -87,11 +90,13 @@ eslint.config.js           eslint + prettier (npm run lint)
   Finance
   Delegation Oversight
   ```
+- **Citation / span:** a single contiguous verbatim quote from `full_text` with its own offsets + method. A requirement may cite **several** spans (evidence split across the letter); grounding is **all-or-nothing** — every span must verify or the whole requirement is excluded. Requirements store a `citations JSONB` array (`{quote, verified, start, end, method}[]`), not a single `source_quote`.
+- **Faithfulness (advisory):** a non-critical LLM pass (`llm/faithfulness.ts` + `pipeline/attachFaithfulness.ts`) that judges, per grounded requirement, whether its verified quotes actually support the paraphrase. Verdict `supported | needs_review` + a reason (persisted only on `needs_review`) live on the requirement as `faithfulness` / `faithfulness_reason`. It is **generated/advisory** — it can raise a ⚠ review flag but **never** changes trust status or hides the green badge; on failure it degrades to a `warnings[]` entry with `faithfulness = null`.
 - **The four trust categories:**
-  - **Grounded** — extracted requirement whose `source_quote` was verified by code to exist in `full_text`; carries a verified citation + offsets. *Highest trust.*
+  - **Grounded** — extracted requirement whose citation span(s) were all verified by code to exist in `full_text`; carries verified citations + offsets. *Highest trust.*
   - **Abstained** — model was asked and explicitly declined (`not_stated`) because the source does not state it. *Honest non-answer.*
-  - **Excluded** — model asserted a requirement but its cited quote could not be verified. Stored and shown transparently for auditability, **never trusted**.
-  - **Generated (advisory)** — content produced as guidance, not as a claim about the source: the **summary** and the **action items**. Clearly labeled generated; never presented as "what the regulation says."
+  - **Excluded** — model asserted a requirement but at least one cited span could not be verified. Stored (with per-span `verified` flags) and shown transparently for auditability, **never trusted**.
+  - **Generated (advisory)** — content produced as guidance, not as a claim about the source: the **summary**, the **action items**, and the **faithfulness** verdict/reason. Clearly labeled generated; never presented as "what the regulation says."
 
 ## What NOT to do
 
