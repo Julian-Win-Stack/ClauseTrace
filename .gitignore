@@ -38,3 +38,6 @@ coverage/
 
 # Internal working docs (not shipped)
 IMPLEMENTATION_PLAN.md
+
+# Local measurement bundles (kept on disk for reference, not tracked)
+docs/measurements/
