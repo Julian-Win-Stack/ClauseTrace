@@ -1,62 +1,46 @@
-import { useEffect, useState } from 'react';
-
-const STAGES = [
-  'Summarizing',
-  'Extracting requirements',
-  'Verifying citations',
-  'Classifying departments',
-  'Drafting action items',
-];
+const LINE_WIDTHS = ['100%', '88%', '60%'];
 
 /**
- * Cosmetic progress: the pipeline runs as one server call, so the steps
- * advance on a timer and settle on the last one until the response lands.
+ * Honest wait state. The analysis runs as one blocking server call, so the
+ * client has no real progress to report — we describe the whole job instead of
+ * faking per-step checkmarks, and the highlighter animation loops for the same
+ * reason: its position means nothing.
  */
 export function StatusSteps() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(
-      () => setCurrent((c) => Math.min(c + 1, STAGES.length - 1)),
-      2500,
-    );
-    return () => clearInterval(timer);
-  }, []);
-
   return (
-    <ol className="space-y-2.5">
-      {STAGES.map((stage, i) => (
-        <li key={stage} className="flex items-center gap-2.5">
-          {i < current ? (
-            <span className="text-verified">
-              <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" fill="none">
-                <path
-                  d="M2.5 6.2 5 8.6 9.6 3.4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          ) : i === current ? (
-            <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-rule border-t-ink" />
-          ) : (
-            <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-rule-soft" />
-          )}
-          <span
-            className={`font-mono text-[12.5px] tracking-tight ${
-              i < current
-                ? 'text-ink-soft'
-                : i === current
-                  ? 'text-ink'
-                  : 'text-ink-faint'
-            }`}
-          >
-            {stage}
-          </span>
-        </li>
-      ))}
-    </ol>
+    <div role="status">
+      <div
+        aria-hidden
+        className="mb-6 w-full max-w-[184px] rounded-lg border border-rule bg-paper px-3.5 py-3"
+      >
+        <div className="space-y-2.5">
+          {LINE_WIDTHS.map((width, i) => (
+            <div
+              key={i}
+              className="relative h-2 overflow-hidden rounded-full bg-rule"
+              style={{ width }}
+            >
+              <span
+                className="ct-mark absolute inset-0 block rounded-full bg-marker"
+                style={{ animationDelay: `${i * 500}ms` }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <h3 className="font-serif text-[19px] leading-snug text-ink">
+        Reading the letter, end to end.
+      </h3>
+      <p className="mt-2 max-w-[36ch] text-[13.5px] leading-relaxed text-ink-soft">
+        Extracting each requirement and verifying every citation against the
+        source before any of it reaches you.
+      </p>
+
+      <p className="mt-5 flex items-center gap-2 font-mono text-[11px] tracking-tight text-ink-faint">
+        <span className="ct-pulse inline-block h-1.5 w-1.5 rounded-full bg-verified" />
+        Usually 2–3 minutes · we don’t shortcut the verification.
+      </p>
+    </div>
   );
 }

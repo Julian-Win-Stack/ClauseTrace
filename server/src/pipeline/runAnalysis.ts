@@ -20,8 +20,8 @@ import {
 import { attachFaithfulness } from './attachFaithfulness.js';
 import { classifyRequirement } from './classifyRequirement.js';
 
-const CALL_TIMEOUT_MS = 180_000;
-const OVERALL_TIMEOUT_MS = 300_000;
+const CALL_TIMEOUT_MS = 1_200_000;
+const OVERALL_TIMEOUT_MS = 1_200_000;
 
 export interface AnalysisResult extends AnalysisDto {
   warnings: string[];

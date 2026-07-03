@@ -4,7 +4,7 @@ import { checkFaithfulness } from '../llm/faithfulness.js';
 import type { LLMClient } from '../llm/client.js';
 import type { ClassifiedRequirement } from './classifyRequirement.js';
 
-const CONCURRENCY = 8;
+const CONCURRENCY = 100;
 const CALL_TIMEOUT_MS = 60_000;
 
 export interface RequirementForSave extends ClassifiedRequirement {

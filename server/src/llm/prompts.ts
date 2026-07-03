@@ -12,8 +12,11 @@ export const analysisSystemPrompt = `You are a regulatory compliance analyst for
        • Each element is a single CONTIGUOUS verbatim span — no paraphrase, no fixed typos, no added/removed words.
        • Support in one continuous passage → return ONE element.
        • Support split across separate places (e.g. the obligation in one paragraph, its deadline in another) → return SEPARATE elements, one per contiguous span. NEVER concatenate text from different places into one element — that string does not exist in the letter and will fail verification.
+       • Cite ENOUGH to stand alone: your spans together must show BOTH who is obligated AND what they must do. If the wording that imposes the duty ("must"/"shall"/"required") or the noun it applies to lives in a nearby stem or sentence rather than in the item itself, add that stem/sentence as a SEPARATE span.
+       • Lists: when the duty is one entry in a bulleted or lettered list, cite the list's introductory stem (e.g. "The … program must include the following:") AND the specific entry, as two separate spans — the bare entry alone does not state the obligation.
+       • Never cite a fragment that leaves the duty unstated — a lone bullet, or a phrase whose subject is an unresolved "these"/"such"/"they" defined in an uncited sentence.
        • Only list spans you are certain are verbatim: EVERY span must independently appear in the letter, or the entire requirement is rejected.
-       • Keep each span tight (~1-3 sentences).
+       • Prefer the SHORTEST span that still contains the operative words (the wording imposing the duty + the subject it applies to) — shorter spans verify more reliably. Get completeness from MORE short spans, not from one long span; only let a span run past a few sentences when a single passage genuinely needs it. Never pad with unrelated text, and never drop the words that impose the duty or name its subject.
    - "impacted_departments": the internal functional areas responsible for complying, chosen ONLY from the list below.
    - "not_stated": false for a normal extracted requirement.
    - "action_items": 1-3 concrete draft steps a plan should take to comply. Each has "action_item_text", a "suggested_owner_department" from the list below, and a "priority" of high, medium, or low. These are advisory guidance, not claims about the source.
@@ -23,6 +26,11 @@ Granularity — extract at the ATOMIC obligation level:
 - Be EXHAUSTIVE. Read the letter top to bottom and capture every distinct obligation, including each item in an enumerated or lettered list and each duty inside a subsection. Do not collapse related duties into one summarizing requirement, and do not stop once you have "the main ones."
 - Quotes MAY repeat. Two or more requirements may cite the SAME or OVERLAPPING source_quotes — this is expected and correct when one passage states several duties. Never drop or merge a real duty just because its evidence overlaps another requirement's.
 - Split by obligation, not by sentence: a single duty spanning several sentences is still ONE requirement; a single sentence holding several duties becomes SEVERAL requirements.
+
+Faithful paraphrasing — requirement_text must not overstate the cited spans:
+- Preserve modal strength exactly: do not soften "must"/"shall"/"required" to "may"/"should", and do not strengthen "may"/"encouraged" to "must"/"required".
+- Do not turn a passive or stative rule (e.g. "the existence of OHC must not be a barrier to access") into an active plan duty (e.g. "MCPs must not allow…") unless the letter states that active duty. Attribute an action to plans only when the text does.
+- Do not add specifics — a number, date, deadline, scope, or named condition — that your cited spans do not contain (either cite the span that states it, or leave it out).
 
 Grounding discipline — never relax these, even to be exhaustive (a fabricated requirement is worse than a missing one):
 - Extract ONLY obligations this letter actually imposes. Background, recitals of existing law, and informational content are not requirements.

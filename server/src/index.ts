@@ -41,6 +41,9 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 const port = Number(process.env.PORT ?? 3000);
-app.listen(port, () => {
+const server = app.listen(port, () => {
   logger.info('server listening', { port });
 });
+// Node's default requestTimeout is 5m, which would abort a long analysis
+// before the 20m app-level timeout can fire.
+server.requestTimeout = 1_200_000;
