@@ -68,5 +68,3 @@ Source documents are real, public DHCS APLs, cleaned to plain text. One of them 
 Catching *every* requirement in a long letter is hard. Verification guarantees precision — what's shown is provably in the source — but not recall: one big extraction call over 30 pages can still miss an obligation. The next step would be to feed the letter to the model in chunks and extract per chunk, so no section gets skimmed; grounding would verify each chunk's citations exactly as it does now.
 
 ---
-
-*More detail for engineers: [SPEC.md](SPEC.md) · [DECISIONS.md](DECISIONS.md) · [CLAUDE.md](CLAUDE.md).*
