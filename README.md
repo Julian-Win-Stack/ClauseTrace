@@ -6,7 +6,6 @@ California managed-care health plans must comply with a stream of DHCS *All Plan
 
 The hard part isn't summarizing. It's trust: in compliance, a made-up requirement is worse than no answer at all. So the whole design follows one rule — **the model is never trusted on its word.**
 
-*Live demo: `<add your URL>`*
 
 ## The core idea: two layers of verification
 
