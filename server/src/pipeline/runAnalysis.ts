@@ -18,7 +18,10 @@ import {
   type AnalysisResponse,
 } from '../llm/schemas.js';
 import { attachFaithfulness } from './attachFaithfulness.js';
-import { classifyRequirement } from './classifyRequirement.js';
+import {
+  classifyRequirement,
+  type ClassifiedRequirement,
+} from './classifyRequirement.js';
 
 const CALL_TIMEOUT_MS = 1_200_000;
 const OVERALL_TIMEOUT_MS = 1_200_000;
@@ -83,6 +86,19 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
   const classified = response.requirements.map((req) =>
     classifyRequirement(req, apl.full_text),
   );
+
+  // Document order: sort by the earliest verified span so requirements read
+  // top-to-bottom of the letter. Reqs with no verified span (abstained,
+  // fully-failed excluded) have no position and sink to the end, keeping
+  // extraction order among themselves (sort is stable).
+  const position = (req: ClassifiedRequirement): number => {
+    const starts = req.citations
+      .filter((c) => c.verified)
+      .map((c) => c.start)
+      .filter((s): s is number => s !== null);
+    return starts.length > 0 ? Math.min(...starts) : Number.MAX_SAFE_INTEGER;
+  };
+  classified.sort((a, b) => position(a) - position(b));
 
   const { requirements, warnings: faithfulnessWarnings } =
     await attachFaithfulness(llm, classified);
