@@ -34,7 +34,8 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
 ```
 /server/src
   index.ts                 Express entry; serves built client in prod
-  /routes                  apls.ts, analyze.ts
+  /routes                  apls.ts, analyze.ts (prod-only rate limits via express-rate-limit, in-memory:
+                           per-IP 3/30min + 10/day, site-wide 20/day; needs trust proxy = 1 in index.ts)
   /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
                            classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
                            attachFaithfulness.ts (non-critical advisory pass; concurrency-8; degrades to warnings[])

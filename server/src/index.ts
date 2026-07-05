@@ -12,6 +12,9 @@ import { analyzeRouter } from './routes/analyze.js';
 import { aplsRouter } from './routes/apls.js';
 
 const app = express();
+// Railway puts one proxy in front of the app; trust it so req.ip (used by
+// the analyze rate limiter) is the real client IP, not the proxy's.
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/api/health', (_req, res) => {

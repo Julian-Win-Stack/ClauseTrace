@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import * as z from 'zod';
 import { createAdhocApl, getApl } from '../db/queries.js';
 import { classifyError } from '../lib/errors.js';
@@ -6,6 +7,47 @@ import { logger } from '../lib/logger.js';
 import { runAnalysis } from '../pipeline/runAnalysis.js';
 
 export const analyzeRouter = Router();
+
+// Each analysis burns real LLM tokens, so production rate-limits this
+// endpoint: per-IP caps plus a site-wide daily budget. Counters are
+// in-memory and reset on redeploy. Failed runs count too (they also cost).
+// Per-IP limiters run first so a blocked IP can't drain the global budget.
+const isProd = process.env.NODE_ENV === 'production';
+const rateLimits = !isProd
+  ? []
+  : [
+      rateLimit({
+        windowMs: 30 * 60 * 1000,
+        limit: 3,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: {
+          error:
+            'Rate limit reached: max 3 analyses per 30 minutes. Please wait and try again.',
+        },
+      }),
+      rateLimit({
+        windowMs: 24 * 60 * 60 * 1000,
+        limit: 10,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: {
+          error:
+            'Rate limit reached: max 10 analyses per day. Try again tomorrow.',
+        },
+      }),
+      rateLimit({
+        windowMs: 24 * 60 * 60 * 1000,
+        limit: 20,
+        keyGenerator: () => 'global',
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: {
+          error:
+            "The site's daily budget of 20 analyses is used up. Try again tomorrow.",
+        },
+      }),
+    ];
 
 const bodySchema = z.union([
   z.object({ aplId: z.number().int().positive() }),
@@ -15,7 +57,7 @@ const bodySchema = z.union([
   }),
 ]);
 
-analyzeRouter.post('/', async (req, res) => {
+analyzeRouter.post('/', ...rateLimits, async (req, res) => {
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
     res
