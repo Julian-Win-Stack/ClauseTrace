@@ -38,6 +38,7 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
                            per-IP 3/30min + 10/day, site-wide 20/day; needs trust proxy = 1 in index.ts)
   /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
                            classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
+                           sortByDocumentPosition.ts (pure: orders requirements by earliest verified span offset),
                            attachFaithfulness.ts (non-critical advisory pass; concurrency-8; degrades to warnings[])
   /grounding               verifyQuote.ts  ← MOST IMPORTANT FILE. Pure, deterministic, unit-tested.
                            offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §4)
@@ -47,7 +48,8 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   /domain                  departments.ts (controlled vocabulary)
   /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts,
                            concurrency.ts (mapWithConcurrency — bounded parallel, order-preserving)
-/server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts, attachFaithfulness.test.ts
+/server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts,
+                           sortByDocumentPosition.test.ts, attachFaithfulness.test.ts
 /client/src                App.tsx (?apl=<id> share URLs; PDF upload → review-in-paste-box), api.ts, types.ts,
                            /lib (cleanPdf.ts = pdfjs extraction; assembleAplText.ts = PURE, unit-tested
                                  DHCS-APL cleaner: header/footer/footnote/marker handling)
