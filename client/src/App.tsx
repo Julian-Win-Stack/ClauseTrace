@@ -25,6 +25,7 @@ export default function App() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [highlight, setHighlight] = useState<Span | null>(null);
+  const [highlightAll, setHighlightAll] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPaste, setShowPaste] = useState(false);
@@ -163,6 +164,14 @@ export default function App() {
       ? 'Re-analyze'
       : 'Analyze';
 
+  const verifiedSpans: Span[] = analysis
+    ? analysis.requirements.flatMap((r) =>
+        r.citations
+          .filter((c) => c.verified && c.start !== null && c.end !== null)
+          .map((c) => ({ start: c.start as number, end: c.end as number })),
+      )
+    : [];
+
   return (
     <div className="flex h-screen flex-col bg-paper text-ink">
       <header className="flex items-center justify-between gap-4 border-b border-rule bg-surface px-6 py-3.5">
@@ -288,15 +297,46 @@ export default function App() {
             <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-faint">
               Source · full_text
             </span>
-            {detail && (
-              <span className="ml-auto font-mono text-[10.5px] text-ink-faint">
-                {detail.apl.char_length.toLocaleString()} chars
-              </span>
-            )}
+            <div className="ml-auto flex items-center gap-3">
+              {verifiedSpans.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setHighlightAll((v) => !v)}
+                  aria-pressed={highlightAll}
+                  className={`flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.1em] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40 ${
+                    highlightAll
+                      ? 'text-verified'
+                      : 'text-ink-faint hover:text-ink-soft'
+                  }`}
+                >
+                  <span
+                    className={`relative h-3.5 w-6 rounded-full transition ${
+                      highlightAll ? 'bg-verified' : 'bg-rule'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-surface transition-all ${
+                        highlightAll ? 'left-3' : 'left-0.5'
+                      }`}
+                    />
+                  </span>
+                  Highlight quotes
+                </button>
+              )}
+              {detail && (
+                <span className="font-mono text-[10.5px] text-ink-faint">
+                  {detail.apl.char_length.toLocaleString()} chars
+                </span>
+              )}
+            </div>
           </div>
           <div className="p-6">
             {detail ? (
-              <SourcePane text={detail.apl.full_text} highlight={highlight} />
+              <SourcePane
+                text={detail.apl.full_text}
+                spans={highlightAll ? verifiedSpans : []}
+                highlight={highlight}
+              />
             ) : (
               <p className="mt-16 text-center font-mono text-[12.5px] leading-6 text-ink-faint">
                 {apls.length === 0
