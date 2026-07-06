@@ -39,7 +39,7 @@ export function StatusSteps() {
 
       <p className="mt-5 flex items-center gap-2 font-mono text-[11px] tracking-tight text-ink-faint">
         <span className="ct-pulse inline-block h-1.5 w-1.5 rounded-full bg-verified" />
-        Usually 2–3 minutes · we don’t shortcut the verification.
+        Usually around 2 minutes 
       </p>
     </div>
   );
