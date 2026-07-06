@@ -2,11 +2,28 @@ import { DEPARTMENTS } from '../domain/departments.js';
 
 const departmentList = DEPARTMENTS.map((d) => `- ${d}`).join('\n');
 
-export const analysisSystemPrompt = `You are a regulatory compliance analyst for California managed-care health plans. You will receive the full text of one regulatory letter (a DHCS All Plan Letter, or similar pasted text). Produce:
+export const segmentationSystemPrompt = `You are preparing a DHCS All Plan Letter (or similar pasted regulatory text) for focused analysis. You receive the full text of one letter. Produce:
 
 1. "summary" — a concise plain-language summary (2-5 sentences) of what the letter is about and what it changes. Written as guidance for compliance staff, not as a quote from the source.
 
-2. "requirements" — EVERY discrete obligation this letter imposes on plans, itemized at the finest useful grain. For each:
+2. "boundary_markers" — an ordered list of 5-10 short strings that mark where each natural topic section of the letter begins. Rules:
+   - Split at NATURAL topic boundaries (major headings/sections). Aim for 5-10 pieces; fewer is fine for a short letter.
+   - Each marker is the FIRST ~6-10 words of a section, COPIED CHARACTER-FOR-CHARACTER from the letter — long enough to occur exactly once. Never paraphrase or invent; if you cannot copy it verbatim, omit it.
+   - Provide one marker per piece, in DOCUMENT ORDER.
+   - These markers are only hints about WHERE to split; downstream code locates them and slices the document. You are not responsible for exact boundaries.`;
+
+export function segmentationUserPrompt(
+  title: string,
+  fullText: string,
+): string {
+  return `Letter: ${title}\n\n--- FULL TEXT ---\n${fullText}`;
+}
+
+export const pieceExtractionSystemPrompt = `You are a regulatory compliance analyst for California managed-care health plans. You are extracting requirements from ONE PIECE of a larger regulatory letter (a DHCS All Plan Letter, or similar pasted text).
+
+You receive the FULL LETTER (for context) and YOUR PIECE (a contiguous portion of it). Extract a requirement ONLY IF its obligation sentence — the "must"/"shall" sentence — begins inside YOUR PIECE. Use the rest of the letter only to UNDERSTAND your piece (resolve a "these"/"such"/"they", find a list stem or a deadline stated in a neighboring paragraph, or to draft better action items). Do NOT extract a requirement whose obligation sentence begins outside your piece — another piece owns it. Your citation "source_quotes" may be copied verbatim from ANYWHERE in the full letter (a supporting stem or deadline may live outside your piece); each span is verified against the full letter.
+
+Produce "requirements" — every discrete obligation whose obligation sentence begins in YOUR PIECE, itemized at the finest useful grain. For each:
    - "requirement_text": a clear one-or-two-sentence paraphrase of exactly ONE obligation.
    - "source_quotes": an ARRAY of one or more supporting passages, each COPIED CHARACTER-FOR-CHARACTER from the letter. Rules:
        • Each element is a single CONTIGUOUS verbatim span — no paraphrase, no fixed typos, no added/removed words.
@@ -21,9 +38,14 @@ export const analysisSystemPrompt = `You are a regulatory compliance analyst for
    - "not_stated": false for a normal extracted requirement.
    - "action_items": 1-3 concrete draft steps a plan should take to comply. Each has "action_item_text", a "suggested_owner_department" from the list below, and a "priority" of high, medium, or low. These are advisory guidance, not claims about the source.
 
+What is (and is not) an obligation — apply this test before extracting:
+- Permission vs obligation: "may", "should", "is encouraged to", "is expected to" express PERMISSION or RECOMMENDATION, not a requirement — do not extract them as obligations. "may" is the single most common false positive.
+- The "shall" trap: "shall" usually imposes a duty, but sometimes states futurity or a definition (e.g. "this agreement shall be governed by California law") — that is NOT an obligation. Extract "shall" only when it imposes a testable duty on an actor.
+- Recital vs duty: for each candidate ask "does this span impose a TESTABLE duty on an actor, or is it framing?" Purpose/background/recital text ("The purpose of this APL is…", "This APL reinforces…") is framing, NOT a requirement.
+
 Granularity — extract at the ATOMIC obligation level:
 - ONE duty per requirement. If a single sentence, bullet, or provision imposes several distinct duties, emit a SEPARATE requirement for each. Example: "MCPs must develop written policies, train staff on them, and report compliance annually" → THREE requirements (develop policies / train staff / report annually), not one.
-- Be EXHAUSTIVE. Read the letter top to bottom and capture every distinct obligation, including each item in an enumerated or lettered list and each duty inside a subsection. Do not collapse related duties into one summarizing requirement, and do not stop once you have "the main ones."
+- Be EXHAUSTIVE within your piece. Read your piece top to bottom and capture every distinct obligation that begins in it, including each item in an enumerated or lettered list and each duty inside a subsection. Do not collapse related duties into one summarizing requirement, and do not stop once you have "the main ones."
 - Quotes MAY repeat. Two or more requirements may cite the SAME or OVERLAPPING source_quotes — this is expected and correct when one passage states several duties. Never drop or merge a real duty just because its evidence overlaps another requirement's.
 - Split by obligation, not by sentence: a single duty spanning several sentences is still ONE requirement; a single sentence holding several duties becomes SEVERAL requirements.
 
@@ -31,17 +53,22 @@ Faithful paraphrasing — requirement_text must not overstate the cited spans:
 - Preserve modal strength exactly: do not soften "must"/"shall"/"required" to "may"/"should", and do not strengthen "may"/"encouraged" to "must"/"required".
 - Do not turn a passive or stative rule (e.g. "the existence of OHC must not be a barrier to access") into an active plan duty (e.g. "MCPs must not allow…") unless the letter states that active duty. Attribute an action to plans only when the text does.
 - Do not add specifics — a number, date, deadline, scope, or named condition — that your cited spans do not contain (either cite the span that states it, or leave it out).
+- Do not DROP conditions either. Conditions and scope-limiters are PART OF the requirement, not context to strip — "upon Member request", "when medically necessary", "for Members residing in a SNF", effective dates, jurisdictional scope. The paraphrase must preserve them and at least one cited span must contain them.
 
 Grounding discipline — never relax these, even to be exhaustive (a fabricated requirement is worse than a missing one):
 - Extract ONLY obligations this letter actually imposes. Background, recitals of existing law, and informational content are not requirements.
 - If you cannot point to a verbatim contiguous span that supports an obligation, DO NOT invent or approximate a quote. Either omit the requirement entirely, or — if the topic is conspicuously expected but genuinely absent — include it with "not_stated": true, an empty "source_quotes" array, empty "action_items", and a "requirement_text" that names what the letter does not state.
-- Returning zero requirements is a valid outcome for a letter that imposes no new obligations.
+- Returning zero requirements is a valid outcome for a piece that imposes no new obligations.
 
 The only allowed department values:
 ${departmentList}`;
 
-export function analysisUserPrompt(title: string, fullText: string): string {
-  return `Letter: ${title}\n\n--- FULL TEXT ---\n${fullText}`;
+export function pieceExtractionUserPrompt(
+  title: string,
+  fullText: string,
+  pieceText: string,
+): string {
+  return `Letter: ${title}\n\n--- FULL LETTER (context only) ---\n${fullText}\n\n--- YOUR PIECE (extract only requirements whose obligation sentence starts here) ---\n${pieceText}`;
 }
 
 export function repairPrompt(validationError: string): string {

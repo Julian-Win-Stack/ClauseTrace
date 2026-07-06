@@ -5,20 +5,25 @@ import {
   type AnalysisDto,
 } from '../db/queries.js';
 import { classifyError, withRetry, withTimeout } from '../lib/errors.js';
+import { mapWithConcurrency } from '../lib/concurrency.js';
 import { logger } from '../lib/logger.js';
-import type { LLMClient } from '../llm/client.js';
+import type { LLMClient, StructuredCallOptions } from '../llm/client.js';
 import { getLLMClient } from '../llm/openaiClient.js';
 import {
-  analysisSystemPrompt,
-  analysisUserPrompt,
+  pieceExtractionSystemPrompt,
+  pieceExtractionUserPrompt,
   repairPrompt,
+  segmentationSystemPrompt,
+  segmentationUserPrompt,
 } from '../llm/prompts.js';
 import {
-  analysisResponseSchema,
-  type AnalysisResponse,
+  pieceExtractionResponseSchema,
+  segmentationResponseSchema,
+  type ExtractedRequirement,
 } from '../llm/schemas.js';
 import { attachFaithfulness } from './attachFaithfulness.js';
 import { classifyRequirement } from './classifyRequirement.js';
+import { tilePieces } from './segmentDocument.js';
 import { sortByDocumentPosition } from './sortByDocumentPosition.js';
 
 const CALL_TIMEOUT_MS = 1_200_000;
@@ -28,44 +33,105 @@ export interface AnalysisResult extends AnalysisDto {
   warnings: string[];
 }
 
-async function callModel(
+/**
+ * One structured LLM call with the mandated failure policy: classify → retry
+ * retryable (capped backoff, inside withRetry) → one repair re-prompt on
+ * schema_invalid → otherwise rethrow. Both stages are critical and share this
+ * shape, so it lives here once.
+ */
+async function structuredWithRepair<T>(
   llm: LLMClient,
-  title: string,
-  fullText: string,
-): Promise<AnalysisResponse> {
-  const base = {
-    system: analysisSystemPrompt,
-    schema: analysisResponseSchema,
-    schemaName: 'apl_analysis',
-    timeoutMs: CALL_TIMEOUT_MS,
-  };
+  options: Omit<StructuredCallOptions<T>, 'user'>,
+  userPrompt: string,
+): Promise<T> {
   try {
     return await withRetry(() =>
-      llm.structuredCall({
-        ...base,
-        user: analysisUserPrompt(title, fullText),
-      }),
+      llm.structuredCall({ ...options, user: userPrompt }),
     );
   } catch (err) {
     if (classifyError(err) !== 'schema_invalid') throw err;
-    // One repair re-prompt on schema failure, then fail for real.
-    logger.warn('schema-invalid model output, attempting one repair');
+    logger.warn('schema-invalid model output, attempting one repair', {
+      schema: options.schemaName,
+    });
     const message =
       err instanceof Error ? err.message.slice(0, 2000) : String(err);
     return await withRetry(() =>
       llm.structuredCall({
-        ...base,
-        user: `${analysisUserPrompt(title, fullText)}\n\n${repairPrompt(message)}`,
+        ...options,
+        user: `${userPrompt}\n\n${repairPrompt(message)}`,
       }),
     );
   }
 }
 
+function callSegmentation(llm: LLMClient, title: string, fullText: string) {
+  return structuredWithRepair(
+    llm,
+    {
+      system: segmentationSystemPrompt,
+      schema: segmentationResponseSchema,
+      schemaName: 'apl_segmentation',
+      timeoutMs: CALL_TIMEOUT_MS,
+    },
+    segmentationUserPrompt(title, fullText),
+  );
+}
+
+function callPieceExtraction(
+  llm: LLMClient,
+  title: string,
+  fullText: string,
+  pieceText: string,
+) {
+  return structuredWithRepair(
+    llm,
+    {
+      system: pieceExtractionSystemPrompt,
+      schema: pieceExtractionResponseSchema,
+      schemaName: 'apl_piece_extraction',
+      timeoutMs: CALL_TIMEOUT_MS,
+    },
+    pieceExtractionUserPrompt(title, fullText, pieceText),
+  );
+}
+
 /**
- * The whole pipeline for one APL: single LLM call (summary + requirements +
- * draft action items) → deterministic verification and trust routing →
- * persist, replacing any previous analysis. No run-status tracking, no crash
- * recovery — a failed run is simply re-run.
+ * Two-stage extraction. Stage 1: one call returns the summary + short verbatim
+ * boundary markers. Deterministic code (tilePieces) locates the markers and
+ * slices full_text into contiguous pieces covering it end-to-end. Stage 2: one
+ * parallel call per piece, each seeing the whole letter for context and its own
+ * piece, extracting only requirements whose obligation sentence starts in its
+ * piece. Both stages are critical — any unrecovered piece failure rejects the
+ * whole run (a silently dropped piece would be an invisible recall hole).
+ */
+async function runSegmentedExtraction(
+  llm: LLMClient,
+  title: string,
+  fullText: string,
+): Promise<{ summary: string; requirements: ExtractedRequirement[] }> {
+  const seg = await callSegmentation(llm, title, fullText);
+
+  const pieces = tilePieces(fullText, seg.boundary_markers);
+  logger.info('document segmented', {
+    markers: seg.boundary_markers.length,
+    pieces: pieces.length,
+  });
+
+  const perPiece = await mapWithConcurrency(pieces, pieces.length, (piece) =>
+    callPieceExtraction(llm, title, fullText, piece.text),
+  );
+
+  return {
+    summary: seg.summary,
+    requirements: perPiece.flatMap((p) => p.requirements),
+  };
+}
+
+/**
+ * The whole pipeline for one APL: segmentation call → parallel per-piece
+ * extraction → merge → deterministic verification and trust routing → persist,
+ * replacing any previous analysis. No run-status tracking, no crash recovery —
+ * a failed run is simply re-run.
  */
 export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
   const apl = await getApl(aplId);
@@ -75,14 +141,14 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     ? `APL ${apl.apl_number}: ${apl.title}`
     : apl.title;
   const llm = getLLMClient();
-  const response = await withTimeout(
-    callModel(llm, title, apl.full_text),
+  const { summary, requirements: extracted } = await withTimeout(
+    runSegmentedExtraction(llm, title, apl.full_text),
     OVERALL_TIMEOUT_MS,
     'analysis',
   );
 
   const classified = sortByDocumentPosition(
-    response.requirements.map((req) => classifyRequirement(req, apl.full_text)),
+    extracted.map((req) => classifyRequirement(req, apl.full_text)),
   );
 
   const { requirements, warnings: faithfulnessWarnings } =
@@ -99,7 +165,7 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     );
   }
 
-  await saveAnalysis(aplId, response.summary, requirements);
+  await saveAnalysis(aplId, summary, requirements);
   logger.info('analysis saved', {
     aplId,
     requirements: classified.length,

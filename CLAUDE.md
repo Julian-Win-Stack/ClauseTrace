@@ -37,7 +37,8 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   index.ts                 Express entry; serves built client in prod
   /routes                  apls.ts, analyze.ts (prod-only rate limits via express-rate-limit, in-memory:
                            per-IP 3/30min + 10/day, site-wide 20/day; needs trust proxy = 1 in index.ts)
-  /pipeline                runAnalysis.ts (orchestrator, single-call strategy),
+  /pipeline                runAnalysis.ts (orchestrator: segmentation call → parallel per-piece extraction → merge),
+                           segmentDocument.ts (pure: LLM-proposed markers → contiguous pieces covering full_text),
                            classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
                            sortByDocumentPosition.ts (pure: orders requirements by earliest verified span offset),
                            attachFaithfulness.ts (non-critical advisory pass; concurrency-8; degrades to warnings[])
@@ -50,7 +51,7 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
   /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts,
                            concurrency.ts (mapWithConcurrency — bounded parallel, order-preserving)
 /server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts,
-                           sortByDocumentPosition.test.ts, attachFaithfulness.test.ts
+                           sortByDocumentPosition.test.ts, segmentDocument.test.ts, attachFaithfulness.test.ts
 /client/src                App.tsx (?apl=<id> share URLs; PDF upload → review-in-paste-box), api.ts, types.ts,
                            /lib (cleanPdf.ts = pdfjs extraction; assembleAplText.ts = PURE, unit-tested
                                  DHCS-APL cleaner: header/footer/footnote/marker handling)
@@ -75,7 +76,7 @@ eslint.config.js           eslint + prettier (npm run lint)
 - **Grounding logic is pure and unit-tested.** No side effects, no I/O, no LLM calls in `grounding/`.
 - **Prompts live in `llm/prompts.ts`**, kept separate from logic. Schemas live in `llm/schemas.ts`.
 - **Every test change invokes `/test-guard`** before it ships.
-- Keep the call count low: start with the fewest LLM calls (one strict-structured call can return summary + requirements + action items) and split extraction into focused section-by-section calls **only** when verification shows missing or unverifiable content on real APLs — never to fix format (strict mode makes malformed JSON impossible).
+- Keep the call count low, but the SPEC §137 trigger has already fired: a single open call missed real requirements on seeded APLs, so extraction is now **segmentation (1 call: summary + boundary markers) → parallel per-piece extraction (1 call/piece) → merge** (see `docs/adr/0001-segmented-extraction.md`, `pipeline/segmentDocument.ts`). Split further only on the same evidence (verification shows missing/unverifiable content) — never to fix format (strict mode makes malformed JSON impossible).
 
 ## Domain glossary
 
