@@ -25,7 +25,8 @@ npm run build       # build client, compile server
 npm run start       # production: server serves the built client
 npm run db:migrate  # apply SQL migrations
 npm run db:seed     # load cleaned APLs from /data into Postgres (idempotent)
-npm test            # vitest — REQUIRED green for grounding/verification logic
+npm run eval <apl_number> [--base <url>] [--analyze]  # grade extraction recall (apl_number = full "24-006" or short tail "006") → HTML report (see eval/README.md)
+npm test            # vitest — REQUIRED green for grounding/verification logic (also runs eval tests via test:eval)
 npm run lint        # eslint + prettier --check — REQUIRED clean before any commit
 ```
 
@@ -57,6 +58,11 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
                            ExcludedList, ActionItemList, StatusSteps, ExportButton, Badge)
 /data/apls                 <apl_number>.txt + metadata.json
 /data/seed.ts              idempotent loader (clears stale analysis if full_text changes)
+/eval                      recall harness (dev tool, standalone; hits the app's HTTP API, no app changes).
+                           run.ts (CLI), lib/{parseKey,resolveKey,match,report,types}.ts (match.ts = pure
+                           1-to-1 offset-overlap grader, reuses grounding/verifyQuote), keys/<apl>.csv (answer
+                           keys, tracked), out/<apl>.html (reports, gitignored). Grades recall by position, not
+                           wording. See eval/README.md.
 docker-compose.yml         local Postgres 16 for dev (host port 5433)
 eslint.config.js           eslint + prettier (npm run lint)
 ```

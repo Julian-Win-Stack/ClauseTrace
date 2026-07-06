@@ -41,3 +41,6 @@ IMPLEMENTATION_PLAN.md
 
 # Local measurement bundles (kept on disk for reference, not tracked)
 docs/measurements/
+
+# Generated eval reports (answer keys under eval/keys are tracked; reports are not)
+eval/out/
