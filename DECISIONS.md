@@ -22,7 +22,7 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 
 ## 2. In-app PDF upload behind a mandatory human-review gate
 
-**Decision:** The client can extract and clean a DHCS APL PDF **in the browser** (`client/src/lib/`, using `pdfjs-dist`) and drop the result into the paste box. That text is **provisional**: it becomes the canonical `full_text` only after the user reviews/edits it and clicks *Add document*. Offline seeding (`data/seed.ts`) and the paste box remain; PDF upload is a third, review-gated on-ramp. No server upload path, no OCR.
+**Decision:** The client can extract and clean a DHCS APL PDF **in the browser** (`client/src/lib/`, using `pdfjs-dist`) and drop the result into the paste box. That text is **provisional**: it becomes the canonical `full_text` only after the user reviews/edits it and clicks *Analyze document*. The paste box remains the direct on-ramp; PDF upload is a second, review-gated one. No server upload path, no OCR.
 
 **Why this shape — and not a parser bolted straight onto the upload path:**
 - **Parsing a PDF is easy; parsing it *faithfully* is hard — and faithful is the only kind this product can use.** Getting *some* text out of a PDF is trivial. Getting text that matches the original **character-for-character** is not.
@@ -87,6 +87,23 @@ The through-line: this product's entire value rests on one guarantee — *a requ
 - **Non-critical by design.** The check runs only on already-grounded requirements, one call each, fanned out in parallel. If it fails (LLM error, malformed output), the requirement stays grounded with no verdict and the failure degrades to a `warnings[]` entry — it never fails the run. An advisory layer must not be able to take down the pipeline or the trust it sits beside.
 
 **When we'd revisit:** the check is one model's judgment and can itself err — miss a real drift, or over-flag a faithful paraphrase. If flag quality proves unreliable on real APLs, we'd tighten the prompt, add a second judge, or require agreement between judges. It stays advisory in every case: it will never become a gate on the green badge, which remains the deterministic verifier's job alone.
+
+---
+
+## 7. No persistence — the app is stateless
+
+**Decision:** There is no database. The whole product is one round trip: document text in (`POST /api/analyze { text, title? }`), structured result out. Nothing is stored server-side; the earlier Postgres layer (stored APLs, saved analyses, the document picker, `?apl=<id>` share links) was removed in July 2026.
+
+**Why:**
+- **The core guarantee never needed storage.** Verification grounds citations against the text submitted in the request; the response carries the offsets and the client already holds the text. Persistence only served convenience features (revisit, share, preloaded documents) — none of them touch the trust layer.
+- **A stateless app is a smaller, simpler system.** No Postgres to run in dev or production, no migrations, no seed step, no replace-on-reanalyze semantics. The pipeline was already pure between "load text" and "save results"; removing both ends made the whole server side effect free.
+- **The demo flow this project exists for is single-shot anyway:** upload/paste a letter, analyze it, read the result, export the checklist.
+
+**What it costs (accepted knowingly):**
+- **No revisiting or sharing.** A refresh loses the result; re-viewing a document means re-running the analysis and paying its LLM cost. Export to Markdown is the way to keep a result.
+- **Every eval run is a fresh analysis.** The recall harness POSTs the cleaned fixture text from `data/apls/` (which stays in the repo precisely for this) and burns tokens on each run — there is no saved analysis to re-grade.
+
+**When we'd revisit:** if revisit/share becomes a real need again, restore a thin persistence layer *around* the pipeline (the seam is clean: `runAnalysis(title, fullText)` in, result object out) rather than threading storage back through it.
 
 ---
 

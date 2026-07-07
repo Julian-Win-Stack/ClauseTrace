@@ -69,7 +69,8 @@ A single-document pipeline over one APL at a time, producing:
 
 - **No matching of requirements against an organization's internal policies (P&Ps).**
 - **No authentication, accounts, or multi-tenancy.** Single-user tool.
-- **No live PDF upload / parsing in v1.** Source documents are pre-cleaned to text offline (see §11). A paste box is provided for ad-hoc text.
+- **No persistence.** There is no database; an analysis lives only in the HTTP response and the browser session. Revisiting a document means re-running the analysis.
+- **No unreviewed PDF ingestion.** The client extracts + cleans an uploaded PDF in the browser, but the text must pass through the paste-box review step before it becomes the source of record (see `DECISIONS.md` §2).
 - **No handling of tables, figures, or images** within documents (text only).
 
 The full rationale for each exclusion — why it was made and when it would be revisited — is in **`DECISIONS.md`**.
@@ -105,41 +106,40 @@ The model must select impacted departments **only** from this list; code validat
 
 ## 5. Architecture overview
 
-A single deployable web application:
+A single deployable web application, **stateless by design**:
 
-- **Backend (Node + TypeScript + Express):** exposes a small JSON API, runs the analysis pipeline, owns all grounding/verification logic, and persists everything to Postgres.
-- **Frontend (React + TypeScript + Vite + Tailwind):** a two-pane analysis view (source on one side, structured results on the other) with click-to-highlight and export.
-- **Database (Postgres):** stores the source documents and the **saved results** of each analysis (requirements and action items), so an analysis can be revisited and shared without re-running it. There is no crash-recovery or run-status tracking (see §9).
+- **Backend (Node + TypeScript + Express):** exposes one JSON endpoint (`POST /api/analyze`), runs the analysis pipeline, and owns all grounding/verification logic. Nothing is persisted — the response is the only output.
+- **Frontend (React + TypeScript + Vite + Tailwind):** a two-pane analysis view (source on one side, structured results on the other) with click-to-highlight and export. The document text lives in browser state; it is what the user pasted or reviewed.
 - **LLM access:** only through an `LLMClient` interface; the concrete implementation calls OpenAI. Provider and model are swappable via environment variables.
 
-There is no message queue, no vector store, and no external services beyond the LLM API and Postgres.
+There is no database, no message queue, no vector store, and no external services beyond the LLM API.
 
 ```
 Browser (React)
-   │  JSON over HTTP
+   │  POST /api/analyze { text, title? }
    ▼
 Express API ── pipeline (summarize → extract+ground → classify → action items)
    │                 │
    │                 ├── grounding/  (deterministic verification — the core)
    │                 └── llm/        (LLMClient → OpenAI, schema-validated I/O)
    ▼
-Postgres (apls, requirements, action_items)
+JSON result (summary, requirements + citations, action items, warnings)
 ```
 
 ---
 
 ## 6. The analysis pipeline
 
-Orchestrated in `server/src/pipeline/runAnalysis.ts`. Given an APL (selected preloaded document or pasted text), the pipeline runs these stages in order and, at the end, **saves the results** to the database. There is **no run-status tracking and no crash recovery**: the app is small and an analysis takes seconds, so if a run fails partway, the user simply runs it again. Re-analyzing a document **replaces** its previously stored results.
+Orchestrated in `server/src/pipeline/runAnalysis.ts`. Given a document (title + full text), the pipeline runs these stages in order and **returns the results** — nothing is saved. There is **no run-status tracking and no crash recovery**: the app is small and an analysis takes seconds, so if a run fails partway, the user simply runs it again.
 
 **Call strategy — start with the fewest LLM calls, split only if quality demands it.**
 
-The stages below are **logical steps, not a fixed number of LLM calls.** Start with the simplest implementation: a **single LLM call** that returns the summary, the requirements (with quotes and departments), and the action items together, using **OpenAI strict structured output** so the response is guaranteed to match the schema. Then look at real output on real APLs, and only add calls if the output actually degrades. On a long document the model may **miss requirements** or return quotes that **fail verification** at a high rate — *that* is the signal to split extraction (Stage 2) into focused, section-by-section calls. Note the trigger carefully: with strict structured output on, malformed JSON can't happen, so the signal is never "broken format" — it is **missing or unverifiable content.** A third valid trigger: the **abstained category never fires** on the seeded "plausible but not stated" document — open extraction rarely volunteers `not_stated`, so if abstention can't be demonstrated, escalate to the "list topics, then extract per topic" shape where each probed topic can honestly return `not_stated`. The deterministic verification pass (Stage 2, step 2) is **always** separate code, never an LLM call. Do not pre-optimize the call count; begin at one and decompose only where verification shows it's needed.
+The stages below are **logical steps, not a fixed number of LLM calls.** Start with the simplest implementation: a **single LLM call** that returns the summary, the requirements (with quotes and departments), and the action items together, using **OpenAI strict structured output** so the response is guaranteed to match the schema. Then look at real output on real APLs, and only add calls if the output actually degrades. On a long document the model may **miss requirements** or return quotes that **fail verification** at a high rate — *that* is the signal to split extraction (Stage 2) into focused, section-by-section calls. Note the trigger carefully: with strict structured output on, malformed JSON can't happen, so the signal is never "broken format" — it is **missing or unverifiable content.** A third valid trigger: the **abstained category never fires** on the "plausible but not stated" test document — open extraction rarely volunteers `not_stated`, so if abstention can't be demonstrated, escalate to the "list topics, then extract per topic" shape where each probed topic can honestly return `not_stated`. The deterministic verification pass (Stage 2, step 2) is **always** separate code, never an LLM call. Do not pre-optimize the call count; begin at one and decompose only where verification shows it's needed.
 
-**Status: this §137 escalation has fired and is implemented.** A single open call missed real requirements on seeded APLs, so extraction is now section-by-section: a **segmentation** call (summary + short verbatim boundary markers) whose markers deterministic code locates and tiles into contiguous *pieces*, then one **per-piece** extraction call in parallel, merged into one flat list before grounding. See `docs/adr/0001-segmented-extraction.md` and `server/src/pipeline/segmentDocument.ts`. The verification pass below is unchanged.
+**Status: this §137 escalation has fired and is implemented.** A single open call missed real requirements on the test APLs, so extraction is now section-by-section: a **segmentation** call (summary + short verbatim boundary markers) whose markers deterministic code locates and tiles into contiguous *pieces*, then one **per-piece** extraction call in parallel, merged into one flat list before grounding. See `docs/adr/0001-segmented-extraction.md` and `server/src/pipeline/segmentDocument.ts`. The verification pass below is unchanged.
 
 **Stage 0 — Resolve source.**
-Load the APL's canonical `full_text` from the database (or, for pasted text, create an ad-hoc APL row first). **This stored text is the single source of truth for all citations and offsets.** Nothing is grounded against anything else.
+The request body's `text` is the canonical `full_text`. **This submitted text is the single source of truth for all citations and offsets.** Nothing is grounded against anything else.
 
 **Stage 1 — Summarize (generated/advisory).**
 One LLM call over the full text → a concise plain-language summary. Labeled generated; not a source claim.
@@ -152,9 +152,9 @@ One LLM call over the full text → a concise plain-language summary. Labeled ge
    - Else **normalized** match (collapse whitespace, normalize quotes/dashes, case-insensitive) → `verified: true`, `method: "normalized"`, map back to approximate raw offsets.
    - Else → `verified: false`. There is deliberately **no similarity/fuzzy tier**: in a long quote a changed number or dropped "not" costs only a sliver of similarity, so any threshold eventually certifies an altered obligation as verified — the exact failure this product exists to prevent. Every character of an accepted quote corresponds to the source. See `DECISIONS.md` §5.
 3. **Classification of each requirement:**
-   - `verified: true` → **grounded** (stored with offsets).
+   - `verified: true` → **grounded** (returned with offsets).
    - model returned `not_stated: true` → **abstained**.
-   - `verified: false` → **excluded** (stored, flagged, never shown as trusted).
+   - `verified: false` → **excluded** (returned, flagged, never shown as trusted).
 4. **Department validation:** discard any returned department not in the controlled vocabulary.
 
 Trust is decided by code verification, not by the model's own say-so.
@@ -162,30 +162,41 @@ Trust is decided by code verification, not by the model's own say-so.
 **Stage 3 — Draft action items (generated/advisory).**
 For each **grounded** requirement, an LLM call (or a single batched call) produces one or more action items: `action_item_text`, `suggested_owner_department` (from the controlled list), `priority` (`high|medium|low`). Action items are guidance derived from requirements — clearly labeled generated, visually and structurally distinct from grounded source claims.
 
-In one-call mode, action items arrive attached to requirements *before* verification runs. Items whose parent requirement is not grounded (excluded or abstained) are **discarded — never stored, never shown as guidance** (guidance derived from an untrusted claim is itself untrusted). The discard is **not silent**: the run's `warnings[]` includes the discarded count, and the UI notes on each excluded requirement that any drafted action items were dropped.
+In one-call mode, action items arrive attached to requirements *before* verification runs. Items whose parent requirement is not grounded (excluded or abstained) are **discarded — never returned, never shown as guidance** (guidance derived from an untrusted claim is itself untrusted). The discard is **not silent**: the run's `warnings[]` includes the discarded count, and the UI notes on each excluded requirement that any drafted action items were dropped.
 
-**Stage 4 — Save & return.**
-Save the results (summary, requirements with their status / offsets / departments, and action items) to the database, **replacing any previous analysis for this APL**. Return the full structured result to the caller (summary, grounded requirements with offsets and departments, abstained items, excluded items, action items, and any warnings from partial failures).
+**Stage 4 — Return.**
+Return the full structured result to the caller: summary, requirements (each with status, citations + offsets, departments, faithfulness verdict, and action items), and any warnings from partial failures. That response is the analysis — there is nothing else.
 
 ---
 
-## 7. Data model (Postgres)
+## 7. Result shape (no persistence)
 
-Use plain SQL migrations. Suggested schema (adjust naming as needed, keep the structure). There is **no `analysis_runs` table** — each APL holds its latest analysis directly.
+There is no database. The `POST /api/analyze` response is the complete data model (types in `server/src/pipeline/runAnalysis.ts`, mirrored in `client/src/types.ts`):
 
-**`apls`** — source documents (and their latest analysis summary)
+```json
+{
+  "summary": "string (generated/advisory)",
+  "requirements": [
+    {
+      "ordinal": 1,
+      "requirement_text": "string (paraphrase)",
+      "status": "grounded | abstained | excluded",
+      "citations": [
+        { "quote": "string", "verified": true, "start": 0, "end": 0, "method": "exact | normalized | none" }
+      ],
+      "faithfulness": "supported | needs_review | null",
+      "faithfulness_reason": "string | null",
+      "impacted_departments": ["string (controlled vocabulary)"],
+      "action_items": [
+        { "text": "string", "suggested_owner_department": "string", "priority": "high | medium | low" }
+      ]
+    }
+  ],
+  "warnings": ["string"]
+}
+```
 
-- `id` (pk), `apl_number` (text, nullable for pasted docs), `title` (text), `issued_date` (date, nullable), `source_url` (text, nullable), `full_text` (text, **canonical citation reference**), `char_length` (int), `is_adhoc` (bool, true for pasted), `summary` (text, nullable — the latest analysis's summary; generated/advisory), `analyzed_at` (timestamp, nullable), `created_at`.
-
-**`requirements`**
-
-- `id` (pk), `apl_id` (fk), `ordinal` (int), `requirement_text` (text), `source_quote` (text), `source_start_offset` (int, nullable), `source_end_offset` (int, nullable), `status` (`grounded|abstained|excluded`), `verification_method` (`exact|normalized|none`), `impacted_departments` (jsonb array), `created_at`.
-
-**`action_items`**
-
-- `id` (pk), `requirement_id` (fk), `text` (text), `suggested_owner_department` (text), `priority` (`high|medium|low`), `created_at`.
-
-Re-analyzing a document **replaces** its analysis: delete the existing `requirements` (and their `action_items`) for that `apl_id`, insert the new set, and update `summary` / `analyzed_at` on the `apls` row. Offsets are stored relative to the associated APL's `full_text`.
+Offsets are relative to the request's `text` — the client already holds that text, so highlights need nothing more than the response.
 
 ---
 
@@ -239,31 +250,28 @@ A focused, two-pane analysis view. When implementing, follow strong frontend des
   - **Abstained** items shown distinctly (e.g., "Not stated in source").
   - **Excluded (unverified)** section — collapsible — listing any model assertions that failed verification, explicitly marked as not trusted. Surfacing these is a deliberate transparency feature; do not hide them. Each excluded item also notes that any action items drafted for it were discarded (unverified requirements never produce guidance).
   - Action items, badged *Generated / advisory*, visually distinct from grounded requirements.
-- **Controls:** select a preloaded APL or paste text; run analysis; per-stage status while running (mirror the pipeline: *Summarizing → Extracting requirements → Verifying citations → Classifying → Drafting action items*).
-- **Shareable URLs:** the selected APL is reflected in the URL (`?apl=<id>` or `/apl/:id`); opening that link loads the document and its saved analysis. This is what makes "revisited/shared" literally true in a no-auth app.
-- **Export:** a button to copy or download the checklist (action items + grounded requirements with citations) as Markdown (`.md`).
+- **Controls:** paste text or upload an APL PDF (extracted + cleaned in the browser, reviewed in the paste box); analyze; per-stage status while running (mirror the pipeline: *Summarizing → Extracting requirements → Verifying citations → Classifying → Drafting action items*).
+- **Export:** a button to copy or download the checklist (action items + grounded requirements with citations) as Markdown (`.md`). Because nothing is persisted, export is the only way to keep a result.
 
 **Trust must be legible in the UI.** A grounded requirement (source-verified) and a generated action item (advisory) must never look the same or be confusable.
 
 ---
 
-## 11. Data ingestion
+## 11. Source documents (eval fixtures)
 
-- Source: **real, public DHCS APLs.** Include **APL 24-013** and 7–11 others (aim for 8–12 total). Prefer a spread of topics so different departments light up.
-- **Clean each to plain text offline:** strip page headers/footers, page numbers, and boilerplate; **preserve** section numbering and paragraph structure. The cleaned text becomes the canonical citation reference — accuracy of stored text directly determines citation quality.
-- Store each as `data/apls/<apl_number>.txt` plus a `data/apls/metadata.json` (number, title, issued_date, source_url).
-- `data/seed.ts` loads all cleaned APLs into the `apls` table (idempotent).
+- Source: **real, public DHCS APLs**, cleaned to plain text: strip page headers/footers, page numbers, and boilerplate; **preserve** section numbering and paragraph structure. The cleaned text is what gets analyzed — its accuracy directly determines citation quality.
+- Stored as `data/apls/<apl_number>.txt` plus a `data/apls/metadata.json` (number, title, issued_date, source_url). The app itself never reads these — they are **fixtures for the eval harness** (`npm run eval` POSTs them to `/api/analyze`) and the raw material for authoring answer keys.
 - Deliberately include at least one document/topic where a plausible-sounding obligation is **not** actually stated, so the *abstention / "not stated"* behavior can be demonstrated on real data.
 
 ---
 
 ## 12. Tech stack
 
-- **Backend:** Node 20+, TypeScript (strict), Express, zod, `pg` (node-postgres) with plain SQL migrations (no heavy ORM required; a thin query layer in `db/queries.ts` is fine).
+- **Backend:** Node 20+, TypeScript (strict), Express, zod. No database.
 - **LLM:** `openai` SDK, accessed only via `LLMClient`.
 - **Frontend:** React, TypeScript, Vite, Tailwind.
 - **Testing:** Vitest — required for grounding/verification logic.
-- **Hosting:** Railway (web service + managed Postgres). A `Dockerfile` is included for portability; Railway is the deploy target for v1.
+- **Hosting:** Railway (single web service). A `Dockerfile` is included for portability; Railway is the deploy target for v1.
 
 ---
 
@@ -277,21 +285,21 @@ clausetrace/
   DECISIONS.md
   .env.example
   Dockerfile
-  docker-compose.yml        # local Postgres 16 for dev (host port 5433)
   eslint.config.js          # eslint + prettier (npm run lint)
   package.json              # npm workspaces: server + client
   /server
     /src
       index.ts              # Express entry; serves built client in prod
       /routes
-        apls.ts             # GET /api/apls, GET /api/apls/:id, POST /api/apls (paste)
-        analyze.ts          # POST /api/analyze
+        analyze.ts          # POST /api/analyze — the only endpoint
       /pipeline
-        runAnalysis.ts      # orchestrator — single-call strategy (summary +
-                            # requirements + action items in one strict call);
-                            # the separate stage files were folded into it
+        runAnalysis.ts      # orchestrator: segmentation → parallel per-piece
+                            # extraction → merge → ground → faithfulness → return
+        segmentDocument.ts  # pure: LLM-proposed markers → contiguous pieces
         classifyRequirement.ts   # pure trust routing: verify → grounded/abstained/excluded,
                                  # department backstop, orphan action-item discard
+        sortByDocumentPosition.ts
+        attachFaithfulness.ts    # non-critical advisory pass
       /grounding
         verifyQuote.ts      # deterministic verification — the heart of the project
         offsets.ts
@@ -300,17 +308,14 @@ clausetrace/
         openaiClient.ts     # + getLLMClient factory; the only OpenAI SDK import
         schemas.ts          # zod schemas (strictObject for OpenAI strict mode)
         prompts.ts
-      /db
-        pool.ts
-        queries.ts
-        migrate.ts          # migration runner
-        /migrations/001_init.sql
+        faithfulness.ts
       /domain
         departments.ts      # controlled vocabulary
       /lib
         env.ts              # loads repo-root .env regardless of cwd
         errors.ts           # classifyError + retry + timeout
         logger.ts
+        concurrency.ts
     /test
       verifyQuote.test.ts
       grounding.test.ts
@@ -319,7 +324,7 @@ clausetrace/
     index.html
     vite.config.ts          # react + tailwind v4 plugins; /api dev proxy
     /src
-      App.tsx               # selection, ?apl=<id> share URLs, paste, analyze
+      App.tsx               # paste / PDF upload → review → analyze → results
       api.ts
       types.ts
       /components
@@ -333,21 +338,17 @@ clausetrace/
         ExportButton.tsx
         Badge.tsx
   /data
-    /apls                   # <apl_number>.txt + metadata.json
-    seed.ts
+    /apls                   # <apl_number>.txt + metadata.json — eval fixtures
+  /eval                     # recall harness (see eval/README.md)
 ```
 
 **API surface**
 
-- `GET /api/apls` — list all APLs, preloaded **and** ad-hoc pasted (id, number, title, `is_adhoc`, whether analyzed). The UI badges pasted docs as *Pasted* — without listing them, a pasted analysis would be unreachable after the session, defeating persist-to-revisit.
-- `GET /api/apls/:id` — full text + metadata **plus its saved analysis** (summary, requirements, action items), if one exists.
-- `POST /api/apls` — create an ad-hoc APL from pasted text; returns id.
-- `POST /api/analyze` — body `{ aplId }` (or `{ text }` shorthand) → runs the pipeline, **saves the results to that APL (replacing any previous analysis)**, and returns the full structured result.
+- `POST /api/analyze` — body `{ text, title? }` → runs the pipeline on that text and returns the full structured result (§7). Stateless: nothing is stored, and offsets in the response refer to the submitted `text`.
 
 **Environment variables** (`.env.example`)
 
 ```
-DATABASE_URL=
 OPENAI_API_KEY=
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-5.5
@@ -360,8 +361,7 @@ PORT=3000
 dev         # run server + client together (watch)
 build       # build client, compile server
 start       # production: server serves built client
-db:migrate  # apply SQL migrations
-db:seed     # load APLs from /data into Postgres
+eval        # analyze a data/apls fixture fresh and grade recall
 test        # vitest
 lint        # eslint (typescript-eslint) + prettier --check
 ```

@@ -1,0 +1,182 @@
+DATE: February 8, 2024
+
+ALL PLAN LETTER 24-002 SUPERSEDES ALL PLAN LETTER 09-009
+
+TO: ALL MEDI-CAL MANAGED CARE PLANS
+
+SUBJECT: MEDI-CAL MANAGED CARE PLAN RESPONSIBILITIES FOR INDIAN HEALTH CARE PROVIDERS AND AMERICAN INDIAN MEMBERS
+
+PURPOSE: The purpose of this All Plan Letter (APL) is to summarize and clarify existing federal and state protections and alternative health coverage options for American Indian Members enrolled in Medi-Cal managed care plans (MCPs). Additionally, this APL consolidates various MCP requirements pertaining to protections for Indian Health Care Providers (IHCPs), including requirements related to contracting with IHCPs and reimbursing claims from IHCPs in a timely and expeditious manner. This APL also provides guidance regarding MCP tribal liaison requirements and expectations in relation to their role and responsibilities.
+
+BACKGROUND: The Department of Health Care Services’ (DHCS) policy pertaining to American Indians and IHCPs, as contained in this APL, is supported by federal and state law, official guidance from the federal Centers for Medicare & Medicaid Services (CMS), and the MCP Contract.
+
+Definitions Federal law defines an individual as an “Indian” if the individual meets any of the following criteria:
+
+(i) Is a member of a Federally recognized Indian tribe; (ii) Resides in an urban center and meets one or more of the four following criteria: A. Is a member of a tribe, band, or other organized group of Indians, including those tribes, bands, or groups terminated since 1940 and those recognized now or in the future by the State in which they reside, or who is a descendant, in the first or second degree, of any such member; B. Is an Eskimo or Aleut or other Alaska Native; C. Is considered by the Secretary of the Interior to be an Indian for any purpose; or D. Is determined to be an Indian under regulations issued by the Secretary of Health and Human Services. (iii)Is considered by the Secretary of the Interior to be an Indian for any purpose; or (iv) Is considered by the Secretary of Health and Human Services to be an Indian for purposes of eligibility for Indian health care services, including as a California Indian, Eskimo, Aleut, or other Alaska Native.
+
+The MCP Contract defines “American Indian” as a Member who meets the criteria for an “Indian” as defined in federal law. For consistency with the MCP Contract, this APL uses the term “American Indian.”
+
+Federal law defines an IHCP as a health care program operated by:
+
+• The Indian Health Service (IHS), which means the agency of that name within the U.S. Department of Health and Human Services established by the Indian Health Care Improvement Act (IHCIA) Section 601, 25 USC Section 1661; • An Indian Tribe, which has the meaning given in the IHCIA Section 4(14), 25 USC Section 1603(14); • A Tribal Organization, which has the meaning given in the IHCIA Section 4(25), 25 USC Section 1603(26); • An Urban Indian Organization (otherwise known as a UIO), which has the meaning given in the IHCIA Section 4(29), 25 USC Section 1603(29).
+
+Tribal Health Program means an American Indian tribe or tribal organization that operates any health program, service, function, activity, or facility funded, in whole or part, by the IHS through, or provided for in, a contract or compact with the IHS under the Indian Self-Determination and Education Assistance Act and is defined in 25 USC section 1603(25).
+
+POLICY:
+
+I. American Indian Member Rights and Protections
+
+American Indian Medi-Cal Members are not required to enroll in an MCP, except in the case of County Organized Health Systems (COHS) or Single Plan Model counties. American Indians who are voluntarily enrolled in an MCP in non-COHS or non-Single Plan Model counties are permitted to disenroll from the MCP, without cause, even in instances where their aid code is subject to mandatory managed care enrollment. American Indians who disenroll from an MCP will receive services under the Fee-for-Service (FFS) delivery system.
+
+An American Indian MCP Member can request to receive services from an IHCP and can choose an IHCP within the MCP’s Network as a Primary Care Provider (PCP). Additionally, the MCP must permit an American Indian MCP Member to obtain Covered Services from an out-of-network IHCP without requiring a referral from a Network PCP or Prior Authorization. IHCPs, whether in the MCP’s Network or out-of-network, can provide referrals directly to Network Providers without a referral from a Network PCP or PriorAuthorization.
+
+An American Indian MCP Member may receive services from an out-of-network IHCP even if there are in-network IHCPs available. When an American Indian MCP Member requests to receive services from an IHCP, and there is no in-network IHCP available, then the MCP must assist the Member in locating and connecting with an out-of-network IHCP.
+
+American Indian MCP Members are not subject to enrollment fees, premiums, deductibles, copayments, cost sharing, or other similar charges. MCPs are prohibited from imposing such fees or charges on any American Indian MCP Member who receives an item or service directly from an IHCP or through a referral to an IHCP, or reduce payments due to a Provider, including an IHCP, by the amount of any enrollment fee, premium, deductible, copayment, cost sharing, or similar charge.
+
+II. IHCP Rights and Protections
+
+DHCS encourages MCPs to be proactive in developing processes designed to enhance collaboration with IHCPs and resolve IHCP inquiries within applicable authorization timeframes, including expedited authorizations.
+
+Existing rights and protections for IHCPs, on the topics of enrollment, contracting, credentialing and site review, and claims payment, are described below.
+
+A. IHCP Enrollment
+
+If an IHCP is providing Medi-Cal covered services, including transportation, to an American Indian MCP Member, the MCP must ensure that the IHCP is enrolled in the Medi-Cal program.
+
+Current policy allows Providers to enroll through either the state-level enrollment pathway or the MCP enrollment pathway.
+
+However, an IHCP facility must enroll through the state-level enrollment pathway in order to receive reimbursement at the All-Inclusive Rate (AIR) or Prospective Payment System (PPS), and to receive Medi-Cal FFS reimbursement for MCP carved-out services, such as dental services. MCPs must inform IHCPs about this reimbursement provision if contacted by an IHCP regarding enrollment.
+
+Additionally, an MCP cannot apply any requirement that a Tribal Health Program be licensed.
+
+State-Level Enrollment Pathway MCPs should be aware that IHCPs enrolling through the Medi-Cal FFS program are subject to DHCS’ rules, processing requirements, and enrollment time frames. Providers, including IHCPs, will not receive expedited processing if they enroll through the FFS program. DHCS is allowed up to 180 days to act on an enrollment application. If a case is referred or has been returned to a Provider for correction, a determination may not occur within 180 days. DHCS encourages MCPs to alert IHCPs to the DHCS enrollment time frames when directing them to enroll through DHCS.
+
+B. Ordering, Referring, and Prescribing Provider Enrollment
+
+MCPs must ensure that individual practitioners who provide services at an IHCP facility are enrolled in Medi-Cal as an Ordering, Referring, and Prescribing (ORP) Provider. Any licensed practitioner working in the IHCP facility must enroll as an ORP, as long as a state-level enrollment pathway exists for that Provider type. For purposes of screening, the IHCP’s categorical risk level is based on the Provider type.
+
+Additionally, an MCP is prohibited from requiring the licensure of a health professional employed by a Tribal Health Program under the state or local law where the Tribal Health Program is located, if the professional is licensed in another state.
+
+C. IHCP Contracting
+
+To ensure proper and timely claims payment to IHCPs, DHCS reminds MCPs that IHCPs do not have to contract with an MCP as a Network Provider, nor do IHCPs have to contract with any MCP Subcontractor, in order to be reimbursed by either the MCP or the Subcontractor for services provided to an American Indian MCP Member.
+
+In an effort to ensure that IHCPs are adequately represented and available to American Indian MCP Members within each MCP’s Provider Network, each MCP must attempt to contract with each IHCP in its service area. MCPs must submit documentation to DHCS of all efforts to contract with IHCPs. This documentation must include information, as applicable, on why the MCP is unable to contract with an IHCP in its service area. The MCP must include IHCP data in the MCP’s 274 file submission to demonstrate compliance with Network requirements.
+
+DHCS strongly encourages MCPs to maintain active communication, throughout the entire contracting and Provider enrollment process, with IHCPs that desire to contract as MCP Network Providers. Within 15 days of receiving a Network Provider application submitted by an IHCP, an MCP must provide acknowledgment of receipt in a written notice to the IHCP.
+
+MCPs are reminded that appropriate delivery of services to Members depends on timely and effective processes. As such, MCPs should be aware of all policies affecting IHCPs and be able to refer an IHCP to the proper enrollment process in order to prevent delays in services to American Indian MCP Members.
+
+Other IHCP Contracting Requirements MCP contracts with IHCPs cannot be construed to in any way change, reduce, expand, or alter the eligibility requirements for services through the IHCP’s programs, as determined by federal law.
+
+No term or condition of the MCP’s contract with an IHCP, or any addendum thereto, can be construed to require the IHCP to serve MCP Members who are ineligible for services from the IHCP. The MCP must acknowledge that pursuant to 45 CFR 80.3(d), a Member shall not be deemed subjected to discrimination by reason of their exclusion from benefits limited by federal law to Members eligible for services from the IHCP. The IHCP acknowledges that the nondiscrimination provisions of federal law may apply.
+
+Certain federal laws and regulations apply to IHCPs, but not other Providers. IHCPs cannot be required to violate those laws and regulations as a result of serving MCP Members.
+
+IHCPs cannot be required to obtain or maintain insurance (including professional liability insurance), provide indemnification, or guarantee that the MCP will be held harmless from liability. MCP contracts with IHCPs, or any addendum thereto, cannot be interpreted to authorize or obligate such Provider, or any employee of such Provider, to perform any act outside the scope of their employment.
+
+In the event of any dispute arising under the MCP’s contract with an IHCP, or any addendum thereto, the parties agree to meet and confer in good faith to resolve any such disputes. Notwithstanding any provision in the MCP’s contract with an IHCP, the IHCP shall not be required to submit any disputes between the parties to binding arbitration.
+
+The MCP’s contracts with IHCPs, and all addenda thereto, must be governed and construed in accordance with federal law. In the event of a conflict between such contract, and all addenda thereto, and federal law, federal law prevails. Nothing in the MCP’s contract with an IHCP, or any addendum thereto, can subject an IHCP to state law to any greater extent than state law is already applicable.
+
+To the extent the MCP imposes any medical quality assurance requirements on its Network IHCPs, any such requirements applicable to the IHCP are subject to Section 805 of the IHCIA (25 U.S.C. § 1675).
+
+Nothing in the MCP’s contract with an IHCP, or in any addendum thereto, can constitute a waiver of federal or tribal sovereign immunity.
+
+For additional contracting requirements and information regarding IHCPs and American Indian MCP Members, see CMS’ CMCS Informational Bulletin.
+
+D. IHCP Credentialing/Re-Credentialing and Site Reviews
+
+MCPs are required to ensure that IHCPs contracting as Network Providers are properly credentialed and re-credentialed, in accordance with the MCP Contract and APL 22-013: Provider Credentialing/Re-Credentialing and Screening/Enrollment, or any subsequent updates. The credentialing and re-credentialing processes verify that Network Providers are properly licensed and certified as required by state and federal law, which helps to ensure the quality of care delivered by Network Providers to American Indian MCP Members. MCPs are encouraged to communicate to IHCPs the differences between the credentialing/re-credentialing and enrollment processes.
+
+Additionally, in order to ensure and support the safe and effective provision of appropriate clinical services, MCPs must conduct site reviews of their contracted PCP sites, including IHCPs that are PCPs. For more information, see APL 22-017: Primary Care Provider Site Reviews: Facility Site Review and Medical Record Review, or any subsequent updates.
+
+E. IHCP Claims Payment
+
+Claims Payment Timeliness IHCPs are entitled to timely and expeditious payment of claims in accordance with federal and state law and APL 23-020. The IHCP does not need to have a contract with an MCP in order to receive reimbursement for services provided to an American Indian MCP Member.
+
+MCPs must pay claims from the IHCP in accordance with federal law, and must pay at either the rate provided under the California Medicaid State Plan in a FFS payment methodology, or the applicable encounter rate published annually in the Federal Register by the IHS, whichever is higher; or at the providers established PPS rate. Tribal Health Programs are to be reimbursed at the federally established AIR as noted in APLs 17-020 and 21-008. Urban Indian Organizations, enrolled in Medi-Cal as a Federally Qualified Health Center, are to be reimbursed through the PPS methodology.
+
+MCPs must process claims from IHCPs in accordance with federal law, which does not permit the denial of claims submitted by an IHCP based on the format in which submitted if the format used complies with that required for submission of claims under Title XVIII of the Social Security Act or recognized under Section 1175 of such Act.
+
+MCPs must reimburse IHCPs that provide Covered Services in a timely and expeditious manner. The federal standard is payment of 90 percent of all clean claims (i.e., claims that require no additional information) within 30 calendar days of receipt, and payment of 99 percent of all clean claims within 90 calendar days of receipt. The Tribal Liaison can assist IHCPs in addressing claims and payment inquiries as further described in Section III. MCPs should offer and provide training to IHCPs on clean claims protocols.
+
+Transportation Reimbursement MCPs must reimburse IHCPs for transporting an American Indian MCP Member to an IHCP. Consistent with APL 22-008: Non-Emergency Medical and Non-Medical Transportation Services and Related Travel Expenses and federal law, if the IHCP is providing Covered Services to an American Indian Member, including transportation, the IHCP must be enrolled in the Medi-Cal program through a state-level enrollment pathway. The IHCP is not required to be contracted with the MCP in order to be reimbursed for services. If the MCP subcontracts with an entity to provide services, such as transportation, the IHCP is also not required to contract with the Subcontractor in order to bill. Either the MCP or the Subcontractor would be required to reimburse the IHCP.
+
+If an IHCP wishes to provide transportation services to non-American Indian MCP Members, the IHCP must be enrolled in the Medi-Cal program as a transportation provider and must contract with the MCP and/or the MCP’s delegated transportation provider.
+
+MCPs are also required to provide reimbursement for transportation related travel expenses as described in 42 CFR section 440.170(a)(1) and (3), and APL 22-008.
+
+III. MCP Tribal Liaison
+
+Effective January 1, 2024, MCPs are required to have an identified tribal liaison dedicated to working with each contracted and non-contracted IHCP in its service area. The tribal liaison is responsible for coordinating referrals and payment for services provided to American Indian MCP Members who are qualified to receive services from an IHCP. DHCS expects the MCP tribal liaison to have experience with tribal health care and American Indian tribes, as well as managed care, and to undertake an active and engaged role in assisting IHCPs with the requirements and policies as outlined in this APL. MCPs are expected to fulfill the tribal liaison role with adequate staffing to ensure effectiveness and their ability to serve IHCPs, American Indian MCP Members, and the geographical landscape of the MCP’s service area. The role and responsibilities of the MCP tribal liaison include, but are not limited to:
+
+• Providing information to IHCPs regarding enrollment and disenrollment of American Indian MCP Members; • Coordinating care with in- and out-of-network IHCPs for American Indian MCP Members; • Ensuring access to care with in- and out-of-network IHCPs for American Indian MCP Members; • Providing assistance to IHCPs and American Indian MCP Members with accessing appropriate transportation given logistical and geographical barriers unique to tribal communities; • Providing case management for American Indian MCP Members that involves in-and out-of-network IHCPs; • Assisting IHCPs with Provider relations services, claims and payment assistance and resolution, and Member services; • Providing support in obtaining grievance, appeal, and State Hearing services to IHCPs in cases that impact American Indian MCP Members;
+
+• Providing benefits and services navigation and coordination, such as those for Foster Care, Community-Based Adult Services, Enhanced Care Management, Community Supports, Behavioral Health, Health Education, Home and Community Based Services, California Children’s Services (CCS), etc., for IHCPs in order to provide full-spectrum services to American Indian MCP Members; • Assisting internal MCP liaisons in instances that involve IHCPs and/or American Indian MCP Members and the other liaison’s respective services and program, in particular the Foster Care liaison given the observed disproportionate representation of American Indian youth in the Foster Care system; as well as the liaisons for Long-Term Services and Supports, Transportation, CCS, Regional Center, Dental, and IHSS; • Providing assistance to IHCPs regarding Medi-Cal program Provider enrollment and MCP contracting, credentialing, and Facility Site Reviews; and • Attesting to the completion of the Cultural Humility training from the California Governor’s Office of the Tribal Advisor , the Overview of Trauma-Informed Care and Historical Trauma training from the IHS , and other relevant trainings as they are developed and noted by DHCS.
+
+Additionally, DHCS strongly encourages MCP tribal liaisons to commit to the following activities to enhance relationships between MCPs, IHCPs, and American Indian MCP Members:
+
+• Providing assistance to the MCP’s Member Services department in situations involving American Indian MCP Members; • Representing the MCP and providing assistance to Subcontractors to address inquiries and/or instances involving American Indian MCP Members; • Participating in the MCP Community Advisory Committee and other MCP committees that potentially impact American Indian MCP Members; • Attending and participating in tribal consultations involving tribes within the MCP’s service area;
+
+• Attending and participating in DHCS’ Tribal and Designees of Indian Health Programs Quarterly Meeting, and other relevant meetings; • Developing tribal specific outreach and educational materials; • Hosting marketing events and developing marketing materials focused on tribal health as permitted; • Collaborating with other MCP tribal liaisons to discuss best practices, lessons learned, and sharing of information and resources; • Collaborating with local tribal communities on the development of regional and culturally appropriate trainings for MCP staff; and • Having knowledge and consideration of Indigenous Determinants of Health when determining quality metrics and data reporting.
+
+MCPs must review their contractually required policies and procedures (P&Ps) to determine if amendments are needed to comply with this APL. If the requirements contained in this APL, including any updates or revisions to this APL, necessitate a change in an MCP’s contractually required P&Ps, the MCP must submit its updated P&Ps to its Managed Care Operations Division (MCOD) Contract Manager within 90 days of the release of this APL. If an MCP determines that no changes to its P&Ps are necessary, the MCP must submit an email confirmation to its MCOD Contract Manager within 90 days of the release of this APL, stating that the MCP’s P&Ps have been reviewed and no changes are necessary. The email confirmation must include the title of this APL as well as the applicable APL release date in the subject line.
+
+MCPs are responsible for ensuring that their Subcontractors and Network Providers comply with all applicable state and federal laws and regulations, Contract requirements, and other DHCS guidance, including APLs and Policy Letters. These requirements must be communicated by each MCP to all Subcontractors and Network Providers. DHCS may impose Corrective Action Plans (CAP), as well as administrative and/or monetary sanctions for non-compliance. For additional information regarding administrative and monetary sanctions, see APL 23-012, and any subsequent iterations on this topic. Any failure to meet the requirements of this APL may result in a CAP and subsequent sanctions.
+
+If you have any questions regarding this APL, please contact your MCOD Contract Manager.
+
+Sincerely,
+
+Original Signed by Dana Durham
+
+Dana Durham, Chief
+
+———
+Footnotes
+
+2 Title 42 of the Code of Federal Regulations (CFR) section 438.14(a). The CFR is searchable at: https://www.ecfr.gov/cgi-bin/ECFR?page=browse.
+3 MCP Contract, Exhibit A, Attachment I, 1.0 Definitions. The Medi-Cal managed care boilerplate contract is available at: https://www.dhcs.ca.gov/provgovpart/Documents/2024-Managed-Care-Boilerplate-Contract.pdf.
+4 42 CFR section 438.14(a).
+5 The Indian Self-Determination and Education Assistance Act is available at: https://www.govinfo.gov/content/pkg/USCODE-2010-title25/pdf/USCODE-2010-title25-chap14-subchapII.pdf.
+6 The Medi-Cal managed care Single Plan Model became effective January 1, 2024.
+7 Title 22 of the California Code of Regulations (CCR) section 55110. The CCR is searchable at: https://govt.westlaw.com/calregs/Search/Index.
+8 42 CFR section 438.14(b)
+9 42 CFR section 438.14(b)(4).
+10 42 CFR section 438.14(b)
+11 Title XIX SSA section 1916(j) (42 USC §1396o(j)), and 42 CFR Sections 447.56 and 457.535.
+12 MCP Contract, Exhibit A, Attachment III, 2.3 Utilization Management Program.
+13 For more information, see APL 22-013: Provider Credentialing/Re-credentialing and Screening/Enrollment, or any future version of that APL. APLs are available at: https://www.dhcs.ca.gov/formsandpubs/Pages/AllPlanLetters.aspx.
+14 Health and Safety Code 1206(c). A Tribal Health Program entity shall be deemed to have met license requirements if the entity meets all the applicable standards for such licensure (25 USC section 1647a).
+15 Welfare and Institutions Code section 14043.26(f).
+16 For more information, see the Medi-Cal Provider Bulletin entitled, “Medi-Cal Requirement for Ordering/Referring/Prescribing Providers Forms and Procedures,” available at: https://files.medi-cal.ca.gov/pubsdoco/Publications/masters-other/provappsenroll/PED_November2012_21036_3.pdf.
+17 25 U.S.C. section 1647a(a)(2) and section 1621t.
+18 California Business and Professions Code section 719.
+19 For more information on Subcontractors and Network Providers, including the definition and requirements applicable, please see APL 19-001, and any subsequent APLs on this topic.
+20 The CMS Center for Medicaid and CHIP Services (CMCS) Informational Bulletin, Subject: Indian Provisions in the Final Medicaid and Children’s Health Insurance Program Managed Care Regulations, Attachment: Model Medicaid and CHIP Managed Care Addendum for Indian Health Care Providers, dated December 14, 2016, is available at: https://www.medicaid.gov/sites/default/files/federal-policy-guidance/downloads/cib121416.pdf.
+21 ibid
+22 ibid
+23 ibid
+24 ibid
+25 ibid
+26 ibid
+27 ibid
+28 ibid
+29 MCP Contract, Exhibit A, Attachment III, 2.2.13 Credentialing and Re-credentialing.
+30 MCP Contract, Exhibit A, Attachment III, 5.2.14 Site Review.
+31 42 CFR section 438.14(b)(2).
+32 Title XIX of SSA section 1932(h)(2) (42 USC section 1396u-2(h)), and 42 CFR 438.14 and
+33 42 USC section 1396a.
+34 Section 10501 of the Patient Protection and Affordable Care Act. The Act is available at: https://www.govinfo.gov/content/pkg/PLAW-111publ148/pdf/PLAW-111publ148.pdf.
+35 Section 206(h) of the IHCIA (25 USC section 1621e(h)).
+36 42 USC section 1396a(a)(37) and 42 CFR section 447.45(d) and APL 23-020: Requirements for Timely Payment of Claims.
+37 MCP Contract, Exhibit A, Attachment III, 4.3.22 Indian Health Care Providers and 4.3.23 Managed Care Liaisons.
+38 The CMS State Medicaid Director Letter (SMD# 23-006): Assurance of Transportation: A Medicaid Transportation Coverage Guide is available at: https://www.medicaid.gov/sites/default/files/2023-09/smd23006.pdf.
+39 MCP Contract, Exhibit A, Attachment III, 4.3.23 Managed Care Liaisons.
+40 Governor’s Office of Tribal Affairs-Office of the Tribal Advisor Cultural Humility training can be accessed at: https://tribalaffairs.ca.gov/wp-content/uploads/sites/10/2020/11/OTA_Cultural-Humility-1.pdf.
+41 The Indian Health Service Overview of Trauma-Informed Care and Historical Trauma training can be accessed at: https://www.ihs.gov/mentalhealth/ticmandatorytraining/.
+42 Attestations for the completion of trainings are to be submitted to the MCP’s Managed Care Operations Division Contract Manager.
+43 Registration information for the DHCS Tribal and Designees of Indian Health Programs Quarterly Meeting, as well as other meetings, is available on the DHCS Indian Health Program webpage under the link “Meetings, Webinars, and Presentations” at: https://www.dhcs.ca.gov/services/rural/Pages/IndianHealthProgram.aspx.
+44 MCP Contract, Exhibit A, Attachment III, 4.1 Marketing.

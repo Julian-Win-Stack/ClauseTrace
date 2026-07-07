@@ -7,7 +7,6 @@ export interface ReportInput {
   result: MatchResult;
   unresolved: KeyItem[];
   baseUrl: string;
-  analyzedFresh: boolean;
   generatedAt: string;
 }
 
@@ -203,7 +202,7 @@ export function renderReport(input: ReportInput): string {
 <body>
 <header>
   <h1>Recall eval — APL ${esc(input.aplNumber)}: ${esc(input.title)}</h1>
-  <div class="sub">grades by document position, not wording · ${input.analyzedFresh ? 'fresh analysis' : 'last saved analysis'} · ${esc(input.baseUrl)} · ${esc(input.generatedAt)}</div>
+  <div class="sub">grades by document position, not wording · fresh analysis · ${esc(input.baseUrl)} · ${esc(input.generatedAt)}</div>
   <div class="score">${result.found.length} <small>/ ${keyTotal} found</small> ${recall !== null ? `<small>· ${recall}% recall</small>` : ''}</div>
   <div class="chips">
     ${chip('found', result.found.length, 'c-found')}

@@ -1,0 +1,219 @@
+DATE: September 16, 2024
+
+ALL PLAN LETTER 24-009 SUPERSEDES ALL PLAN LETTER 23-004
+
+TO: ALL MEDI-CAL MANAGED CARE PLANS
+
+SUBJECT: SKILLED NURSING FACILITIES -- LONG TERM CARE BENEFIT STANDARDIZATION AND TRANSITION OF MEMBERS TO MANAGED CARE
+
+PURPOSE: The purpose of this All Plan Letter (APL) is to provide requirements to all Medi-Cal managed care plans (MCPs) on the Skilled Nursing Facility (SNF) Long Term Care (LTC) benefit standardization provisions of the California Advancing and Innovating Medi-Cal (CalAIM) initiative, including the mandatory transition of Medi-Cal members to managed care.
+
+BACKGROUND: CalAIM seeks to move Medi-Cal to a more consistent and seamless system by reducing complexity and increasing flexibility through benefit standardization.
+
+The Medi-Cal program provides benefits through both a Fee-For-Service (FFS) and managed care delivery system. While Medi-Cal managed care is available statewide, the benefits vary among counties depending on the managed care plan model. Variations in benefits include coverage of SNF services. Prior to January 1, 2023, MCPs operating in 27 counties covered SNF services under the institutional LTC services benefit. Conversely, managed care Members in 31 counties were disenrolled from managed care to Medi-Cal FFS if they required institutional LTC services.
+
+To further CalAIM’s goals to standardize and reduce complexity across the state and reduce county-to-county differences, the Department of Health Care Services (DHCS) is implementing benefit standardization across MCPs statewide. Benefit standardization will help ensure consistency in the benefits delivered by managed care and FFS statewide.
+
+Prior to January 1, 2023, MCPs operating in 31 counties covered Medically Necessary SNF services for Members from the time of admission into a SNF and up to one month after the month of admission into the SNF. Members were disenrolled from the MCP to Medi-Cal FFS after this time.
+
+Effective January 1, 2023, DHCS required most non-dual and dual LTC Members (including those with a Share of Cost) receiving SNF services to be enrolled in an MCP. This APL focuses on SNF services as part of institutional LTC services.
+
+Effective January 1, 2024, institutional LTC Members receiving institutional LTC services in a Subacute Care Facility or Intermediate Care Facility for the Developmentally Disabled (ICF/DD) must be enrolled in an MCP. APLs specific to subacute care services (provided in both freestanding and hospital-based, as well as pediatric and adult subacute care facilities) and ICF/DD services will be released separately.
+
+DHCS will ensure MCP readiness before the transition of these populations into managed care. Readiness will include, but not limited to, requiring MCPs to submit data and information to DHCS to confirm there is an adequate Network in place to meet anticipated utilization for their Members. Additionally, a deliverables matrix will be provided to MCPs with all plan readiness requirements.
+
+POLICY:
+
+I. Benefit Requirements
+
+1. Effective January 1, 2023, MCPs in all counties must authorize and cover Medically Necessary SNF services (provided in both freestanding and hospital-based facilities), consistent with definitions in the Medi-Cal Provider Manual and any subsequent updates. All MCPs must ensure that Members in need of SNF services are placed in a health care facility that provides the level of care most appropriate to the Member's medical needs, as outlined in the MCP Contract and as documented by the Member’s Provider(s). This means that, effective January 1, 2023, Members who are admitted into a SNF will remain enrolled in managed care instead of being disenrolled from the MCP and enrolled in FFS Medi-Cal.
+
+MCPs must coordinate benefits with Other Health Coverage (OHC) programs or entitlements in accordance with APL 22-027, Cost Avoidance and Post-Payment Recovery for Other Health Coverage, or any superseding APL, including recognizing OHC as the primary payer, and the Medi-Cal program as the payer of last resort. MCPs must coordinate benefits by exercising cost avoidance; billing OHCs, such as Medicare or private health coverage, as primary when the coverage is known; and conducting post-payment recovery for the reasonable value of the services if the OHC is identified retroactively, if the Member has an OHC indicator of A, or if the service is required to be pay and chase. Additional information is available in APL 22-027, or any superseding APL. The existence of OHC must not be a barrier to accessing SNF services.
+
+As part of Basic Population Health Management (BPHM), MCPs must ensure members are engaged with their assigned Primary Care Providers, including arranging transportation. MCPs must provide Non-Emergency Medical Transportation (NEMT) and Non-Medical Transportation to Members, including those residing in a SNF, in accordance with APL 22-008, Non-Emergency Medical and Non-Medical Transportation Services and Related Travel Expenses, or any superseding APL. This includes providing NEMT services if the Member is being transferred from an emergency room or acute care hospital to a SNF, without prior authorization. For MCP covered services requiring recurring appointments, MCPs must provide authorization for NEMT for the duration of the recurring appointments, not to exceed 12 months. The Member must have an approved Physician Certification Statement form authorizing NEMT by the Provider.
+
+MCPs must ensure that the SNF and its staff have appropriate training on benefits coordination, including clean claims billing protocols and balanced billing prohibitions.
+
+2. Consistent with guidance in APL 22-012, Governor’s Executive Order N-01-19, Regarding Transitioning Medi-Cal Pharmacy Benefits from Managed Care to Medi-Cal Rx, or any superseding APL, the financial responsibility for prescription drugs is determined by the claim type on which they are billed. If certain drugs are dispensed by a pharmacy and billed on a pharmacy claim, they are carved out and paid by Medi-Cal Rx. If the drugs are provided by the SNF and billed on a medical or institutional claim, the MCP is responsible.
+
+For MCPs newly covering SNF services effective January 1, 2023, financial responsibility for prescription drugs is determined by claim type, as discussed above, since the Medi-Cal FFS SNF per diem rate does not include legend drugs (prescription drugs). MCPs may choose to cover drugs not covered by Medi-Cal Rx, inclusive of over-the-counter drugs and other therapies otherwise not covered.
+
+MCPs must comply with the Population Health Management (PHM) requirements, which include the coordination of medically necessary drugs or medications on behalf of the Member.
+
+MCPs must cover all Medically Necessary services for Medi-Cal managed care Members residing in or obtaining care in a SNF, including facility services; professional services; ancillary services; and the appropriate level of care coordination, including for carved-out Medi-Cal services, as outlined in this APL.
+
+II. Network Readiness Requirements
+
+As part of readiness, all MCPs are encouraged to offer a contract to all SNFs within the MCP’s service area(s) that meet the licensing, enrollment, and Credentialing requirements. DHCS issued MCPs SNF Network Readiness Requirements guidance and a reporting template with a list of approved and active SNFs to assist with Network readiness and provide contracting options for MCPs to develop SNF networks. MCPs must contract only with SNFs enrolled and licensed by the California Department of Public Health (CDPH) and that are enrolled in Medi-Cal. MCPs must ensure contracted SNFs are enrolled and credentialed in accordance with APL 22-013, Provider Credentialing/Re-Credentialing and Screening/Enrollment, or any superseding APL, before contracting with SNFs. A list of approved and active SNFs can be found on CDPH’s website.
+
+MCPs must develop sufficient Network capacity to enable Member placement in SNFs within five Working Days, seven Working Days, or 14 calendar days of a request, depending on the county of residence, as outlined in Welfare and Institutions Code (W&I) section 14197.
+
+In accordance with APL 21-003, Medi-Cal Network Provider and Subcontractor Terminations, or any superseding APL, MCPs must comply with requirements relating to CDPH-initiated facility decertifications and suspensions to ensure that impacted Members are transitioned appropriately and do not experience disruption in access to care.
+
+III. Leave of Absence or Bed Hold Requirements
+
+MCPs must provide continuity of care for Members that are transferred from a SNF to a general acute care hospital, and then require a return to a SNF level of care due to Medical Necessity. Requirements regarding leave of absence, bed hold, and continuity of care policies apply.
+
+MCPs must ensure the provision of a leave of absence/bed hold that a SNF provides in accordance with the requirements of 22 California Code of Regulations (CCR) section 72520 or California’s Medicaid State Plan. MCPs must allow the Member to return to the same SNF where the Member previously resided under the leave of absence/bed hold policies in accordance with the Medi-Cal requirements for leave of absence and bed hold, which are detailed in 22 CCR sections 51535 and 51535.1. MCPs must ensure that SNFs notify the Member or the Member’s authorized representative in writing of the right to exercise the bed hold provision.
+
+MCPs must regularly review all denials of bed holds. Additionally, MCPs must provide transition assistance and Care Coordination to a new SNF when a SNF claims an exception under the bed hold regulations or fails to comply with the regulations.
+
+MCPs must ensure that the SNF and its staff have appropriate training on leave of absence and bed hold requirements, including knowledge of the required clinical documentation to exercise these rights.
+
+IV. Continuity of Care Requirements
+
+Effective January 1, 2023, through June 30, 2023, for Members residing in a SNF and transitioning from Medi-Cal FFS to Medi-Cal managed care, MCPs were required to automatically provide 12 months of continuity of care for the SNF placement. Automatic continuity of care means that if the Member is currently residing in a SNF, they do not have to request continuity of care to continue to reside in that SNF. While Members must meet Medical Necessity criteria for SNF services, continuity of care must be automatically applied.
+
+MCPs must allow Members to stay in the same SNF under continuity of care only if all of the following applies:
+
+• The facility is enrolled and licensed by CDPH; • The facility is enrolled as a Medi-Cal Provider; • The SNF and MCP agree to payment rates that meet state statutory requirements; and • The facility meets the MCP’s applicable professional standards and has no disqualifying quality-of-care issues.
+
+MCPs must determine if Members are eligible for automatic continuity of care before the transition by identifying the Member’s SNF residency and pre-existing relationship through historical utilization data or documentation provided by DHCS, such as Medi-Cal FFS utilization data, or by using information from the Member or Provider. A pre-existing relationship means that the Member has resided in the SNF at some point during the 12 months prior to the date of the Member’s enrollment in the MCP.
+
+Following their initial 12-month automatic continuity of care period, Members may request an additional 12 months of continuity of care, following the process established by APL 23-022, Continuity of Care for Medi-Cal Beneficiaries Who Newly Enroll in Medi-Cal Managed Care from Medi-Cal FFS, on or After January 1, 2023, or any superseding APL.
+
+A Member residing in a SNF who newly enrolls in an MCP on or after July 1, 2023, does not receive automatic continuity of care and must instead request continuity of care following the process established by APL 23-022, or any superseding APL. MCPs must notify the Member or their authorized representative, and furnish a copy of the notification to the SNF in which the Member resides, of the Member’s right to request continuity of care, consistent with APL 23-022, or any superseding APL.
+
+If a Member is unable to access continuity of care as requested, the MCP must provide the Member or their authorized representative, with a written notice of action of an adverse benefit determination in accordance with APL 21-011, Grievance and Appeals Requirements, Notice and “Your Rights” Templates, or any superseding APL. A copy of the notification must also be provided to the SNF in which the Member resides.
+
+MCPs must also comply with the discharge requirements in Health and Safety Code (H&S) section 1373.96 and W&I section 14186.3(c)(4).
+
+V. Treatment Authorizations
+
+Effective January 1, 2023, for Members residing in a SNF and transitioning from Medi-Cal FFS to Medi-Cal managed care, MCPs are responsible for treatment authorization requests (TAR) approved by DHCS for SNF services provided under the SNF per diem rate for a period of 12 months after enrollment in the MCP, or for the duration of the TAR, whichever is shorter.
+
+Effective January 1, 2023, for Members residing in a SNF who are transitioning from Medi-Cal FFS to Medi-Cal managed care, MCPs are responsible for all other DHCS-approved TARs for services in a SNF exclusive of the SNF per diem rate for a period of 90 days after enrollment in the MCP, or until the MCP is able to reassess the Member and ensure provision of Medically Necessary services.
+
+Effective January 1, 2023, for all MCPs in all counties, prior authorization requests for Members who are transitioning from an acute care hospital are to be considered expedited, requiring a response time of no greater than 72 hours, including weekends.
+
+VI. The Preadmission Screening and Resident Review
+
+To prevent an individual’s inappropriate nursing facility admission and retention of individuals, federal law requires proper screening and evaluation before such placement. These Preadmission Screening and Resident Review (PASRR) requirements are applicable for all Medicaid-certified nursing facilities for all admissions (regardless of payer source). The PASRR process is required to ensure that individuals who may be admitted into a nursing facility for a long-term stay be preliminarily assessed for serious mental illness and/or intellectual/developmental disability or related conditions. MCPs are required to work with DHCS and Network Providers, including discharging facilities or admitting nursing facilities, to obtain documentation validating PASRR process completions. Further implementation guidance is forthcoming.
+
+VII. Facility Payment
+
+In accordance with W&I section 14184.201(b)(2), for Contract periods from January 1, 2023, to December 31, 2025, inclusive, each MCP must reimburse a Network Provider furnishing SNF services to a Member, and each Network Provider of SNF services must accept, the payment amount the Network Provider would be paid for those services in the FFS delivery system, as defined by DHCS in California’s Medicaid State Plan and as authorized by W&I section 14184.102(d). This reimbursement requirement is subject to approval by the Centers for Medicare and Medicaid Services (CMS) as a state directed payment arrangement in accordance with 42 Code of Federal Regulations (CFR) section 438.6(c), and is subject to future budgetary authorization and appropriation by the California Legislature.
+
+MCPs in counties where extended coverage of SNF services newly transitioned from FFS to managed care on January 1, 2023, must reimburse Network Providers of SNF services for those services at exactly the applicable Medi-Cal FFS per-diem rates for dates of service from January 1, 2023, through December 31, 2025, in accordance with W&I section 14184.201(b)(2), this APL, and the terms of the CMS-approved state directed payment preprint.
+
+MCPs in counties where extended SNF services were already Medi-Cal managed care Covered Services prior to January 1, 2023, must reimburse Network Providers of SNF services for those services at no less than the applicable Medi-Cal FFS per-diem rates for dates of service from January 1, 2023, through December 31, 2025, in accordance with W&I section 14184.201(b)(2), this APL, and the terms of the CMS-approved state directed payment preprint.
+
+MCPs are expected to comply with these reimbursement requirements as of January 1, 2023. Should CMS require any modification to this policy, DHCS will issue further conforming guidance at that time.
+
+This reimbursement requirement applies only to SNF services as defined in 22 CCR sections 51123(a), 51511(b), 51535, and 51535.1, as applicable, starting on the first day of a Member’s stay, which include: • SNF services as set forth in 22 CCR section 51123(a) to include: • Room and board. • Nursing and related care services. • Commonly used items of equipment, supplies and services as set forth in 22 CCR section 51511(b). • Leave-of-absence days as set forth in 22 CCR section 51535. • Bed holds as set forth in 22 CCR section 51535.1.
+
+Medi-Cal FFS per-diem rates for SNF services are all-inclusive rates that account for both skilled and custodial levels of care and are not tiered according to the level of care. Ancillary services are excluded from the services bundled under the Medi-Cal FFS per-diem rates.
+
+The reimbursement requirement does not apply to any other services provided to a Member receiving SNF services such as, but not limited to, services outlined in 22 CCR sections 51123(b) and (c) and 51511(c) and (d), SNF services provided by an Out-of-Network Provider, or services that are not provided by a Network Provider of SNF services. Such non-qualifying services are not subject to the terms of this state directed payment and are payable by MCPs in accordance with the terms negotiated between the MCP and the Provider. The reimbursement requirement applies only to payments made directly for SNF services rendered, and does not apply to other types of payments, including, but not limited to, Provider incentive and pay-for-performance payments.
+
+MCPs must coordinate benefits with OHC programs or entitlements as described elsewhere in this APL. For SNF services provided to Members who are dually eligible for Medi-Cal and Medicare, MCPs must pay the full deductible and coinsurance in accordance with APL 13-003, Coordination of Benefits: Medicare and Medi-Cal, or any superseding APL.
+
+MCPs must provide a process for Network Providers to submit electronic claims and to receive payment electronically if a Network Provider requests electronic processing including, but not limited to, processing automatic crossover payments for Members who are dually eligible for Medicare and Medi-Cal.
+
+MCPs must pay timely, in accordance with the prompt payment standards within their MCP Contract and APL 23-020, Requirements for Timely Payment of Claims, or any superseding APL. MCPs are highly encouraged to remit claims and invoices in the same frequency in which they are received.
+
+Medi-Cal FFS per diem rates may be updated by DHCS from time to time for specified dates of service. The Medi-Cal FFS per diem rate published for the latest dates of service remains effective for subsequent dates of service, until such time that an updated per diem rate is published for subsequent dates of service. MCPs must implement payment of the updated per diem rate on a prospective basis for all claims with applicable dates of service, received on or after 30 Working Days of being notified by DHCS that the updated rates are published. If additional amounts are owed retroactively in accordance with this APL and the terms of this state directed payment to a Network Provider of SNF services on any claims for applicable dates of service that were processed prior to the MCP implementing the updated per diem rates on a prospective basis, then MCPs must pay any necessary retroactive adjustments within 45 Working Days after being notified by DHCS that the updated rates are published. MCPs must retroactively reprocess claims for specified dates of service to effectuate the updated rate automatically, without requiring manual reprocessing or resubmission by the Network Provider. MCPs are expected to comply with these reimbursement requirements immediately upon issuance of this APL.
+
+Additional details regarding Network Provider payment requirements for distinct part nursing facilities will be forthcoming.
+
+MCPs must ensure that Network Providers of SNF services receive reimbursement in accordance with these requirements for all qualifying services regardless of any Subcontractor arrangements.
+
+Payments processes including timely payment of claims requirements for Network Providers also apply for Out-of-Network Providers when those dates of service were under continuity of care.
+
+VIII. Share of Cost
+
+MCPs must process claims submitted by SNFs consistent with the Medi-Cal guidelines for Share of Cost (SOC) outlined in the Medi-Cal LTC Provider Manual. When a Member has an SOC, the SNF will subtract the SOC payment collected or obligated payment from the claim amount and submit the claim to the MCP to pay the balance.
+
+Also, as a result of the Johnson v. Rank lawsuit, Medi-Cal Members, not their Providers, can elect to use the SOC funds to pay for necessary, non-covered, medical or remedial care services, supplies, equipment, and drugs (medical services) that are prescribed by a physician and part of the plan of care authorized by the Member’s attending physician. The physician’s prescriptions for SOC expenditures must be maintained in the Member’s medical record. If a Member spends part of their SOC on necessary, non-covered, medical or remedial care services or items, the SNF will subtract those amounts from a Member’s SOC and collect the remaining SOC amount owned. The SNF will adjust the amount on the claim and submit the claim to the MCP to pay the balance. Further DHCS guidance regarding Johnson v. Rank requirements are available in the Medi-Cal LTC Provider Manual.
+
+SNFs that collect SOC payments or obligated payments are responsible for certifying SOC in the Medi-Cal eligibility verification system to show the Member has paid or obligated payment for the monthly SOC amount owed. Instructions for Providers to perform SOC clearance transactions in the Medi-Cal eligibility verification system are provided in Part 1 of the Medi-Cal Provider Manual.
+
+IX. Population Health Management Requirements
+
+In addition to benefit standardization, effective January 1, 2023, MCPs must implement a PHM Program that ensures all Medi-Cal managed care Members, including those using SNF services, have access to a comprehensive set of services based on their needs and preferences across the continuum of care, including BPHM, transitional care services (TCS), care management programs, and Community Supports.
+
+BPHM applies an approach to care that ensures needed programs and services, including primary care, are made available to each Member at the right time and in the right setting. In contrast to care management, which is focused on populations with significant or emerging needs, all MCP Members receive BPHM, regardless of their level of need. BPHM replaces DHCS’ previous “Basic Case Management” requirements.
+
+As part of their PHM Program, MCPs must provide strengthened TCS that will be implemented in a phased approach. Effective January 1, 2023, MCPs must implement timely prior authorizations for all Members, and know when all Members are admitted discharged, or transferred from facilities, including SNFs. MCPs must also ensure that all TCS are completed for all high-risk Members , including assigning a single point of contact, referred to as a care manager, to assist Members throughout their transition and ensure all required services are complete. MCPs and their assigned care managers must ensure Member transitions to and from a SNF are timely and do not delay or interrupt any Medically Necessary services or care, and that all required transitional care activities are completed. By January 1, 2024, MCPs must ensure all TCS are completed for all Members.
+
+Care management beyond transitions consists of two programs: (1) Complex Care Management (CCM) and (2) Enhanced Care Management (ECM). If a Member is enrolled in either CCM or ECM, TCS must be provided by the Member’s assigned care manager. MCPs must also continue to provide all elements of BPHM to Members enrolled in care management programs.
+
+CCM is a service for managed care Members who need extra support to avoid adverse outcomes but who are not in the highest risk group. CCM provides both ongoing chronic care coordination and interventions for episodic, temporary needs with a goal of regaining optimum health or improved functional capability, in the right setting and in a cost-effective manner.
+
+ECM is a whole-person, interdisciplinary approach to comprehensive care management for managed care Members who meet the Populations of Focus criteria. It is intended to address the clinical and non-clinical needs of high-cost, high-need Members through systematic coordination of services and it is community-based, interdisciplinary, high-touch, and person-centered. One of the ECM Populations of Focus is specifically intended for nursing facility residents transitioning to the community. For these Members, the ECM Lead Care Manager must identify all resources to address all needs of the Member to ensure they will be able to transition and reside continuously in the community and provide longitudinal support beyond the transition.
+
+Community Supports are medically appropriate and cost-effective alternatives to traditional medical services or settings that are designed to address social drivers of health, which are factors in people’s lives that influence their health. MCPs are strongly encouraged to offer Community Supports services to Members who meet any of the ECM Populations of Focus, as well as other Members receiving CCM or BPHM, depending on their needs. All MCPs are encouraged to offer as many as possible of the Community Supports approved by DHCS.
+
+For more information about PHM, please refer to the DHCS PHM website ; the PHM Policy Guide ; APL 22-024, or any superseding APL; and the MCP Contract. For more information about ECM or Community Supports, please refer to the DHCS ECM & Community Supports website ; APL 23-032, or any superseding APL; APL 21-017, or any superseding APL; the Finalized ECM and Community Supports MCP Contract Template ; the ECM Policy Guide ; and the Community Supports Policy Guide.
+
+X. Long-Term Services and Supports Liaison
+
+MCPs must identify an individual or set of individuals as part of their Provider Relations or related functions to serve as the liaison for LTSS Providers. For the purposes of this APL, LTSS refers to LTC facilities, including SNFs. Liaisons must receive training on the full spectrum of rules and regulations pertaining to Medi-Cal covered LTC, including payment and coverage policies, prompt claims payment requirements, Provider resolutions policies and procedures, and care management, coordination and transition policies. LTSS liaisons must assist facilities in addressing claims and payment inquiries and assist with care transitions among the LTSS Provider community to best support Members’ needs. LTSS liaisons do not have to be clinical licensed professionals, they may be fulfilled with non-licensed staff. MCPs must identify these individuals and disseminate their contact information to relevant Network Providers, including SNFs that are within Network.
+
+XI. MCP Quality Monitoring
+
+MCPs are responsible for maintaining a comprehensive Quality Assurance Performance Improvement (QAPI) program for LTC services provided. MCPs must have a system in place to collect quality assurance and improvement findings from CDPH to include, but not be limited to, survey deficiency results, site visit findings, and complaint findings.
+
+The MCP’s comprehensive QAPI program must incorporate the following: • Contracted SNFs’ QAPI programs, which must include five key elements identified by CMS. • Claims data for SNF residents, including but not limited to emergency room visits, healthcare associated infections requiring hospitalization, and potentially preventable readmissions as well as DHCS supplied WQIP data via a template provided by DHCS on a quarterly basis. • Mechanisms to assess the quality and appropriateness of care furnished to Members using LTSS, including assessment of care between care settings and a comparison of services and supports received with those set forth in the Member’s treatment/service plan. • Efforts supporting Member community integration. • DHCS and CDPH efforts to prevent, detect, and remediate identified critical incidents.
+
+XII. Monitoring and Reporting
+
+MCPs are required to report on LTC measures within the Managed Care Accountability Set (MCAS) of performance measures. MCPs are required to calculate the rates for each MCAS LTC measure for each SNF within their Network for each reporting unit. MCPs will be held to quality and enforcement standards in APL 19-017 and APL 23-012, respectively, or any superseding APLs.
+
+MCPs are also required to annually submit QAPI program reports with outcome and trending data as specified by DHCS.
+
+XIII. Policies and Procedures
+
+Within 60 days of the release of this APL, MCPs must update and submit their contractually required Policies and Procedures (P&Ps) to include all requirements in this APL to the Managed Care Operations Division (MCOD) Contract Oversight SharePoint Submission Portal. In addition, MCPs must submit any P&Ps required in any DHCS deliverables lists for LTC to their MCOD Contract Manager.
+
+MCPs are responsible for ensuring that their Subcontractors and Network Providers comply with all applicable state and federal laws and regulations, Contract requirements, and other DHCS guidance, including APLs and Policy Letters. These requirements must be communicated by each MCP to all Subcontractors and Network Providers. DHCS may impose Corrective Action Plans (CAP), as well as administrative and/or monetary sanctions for non-compliance. MCPs should review their Network Provider and/or Subcontractor Agreements, including Division of Financial Responsibility provisions as appropriate, to ensure compliance with this APL. For additional information regarding administrative and monetary sanctions, see APL 23-012, and any subsequent iterations on this topic. Any failure to meet the requirements of this APL may result in a CAP and subsequent sanctions.
+
+If you have any questions regarding this APL, please contact your MCOD Contract Manager.
+
+Sincerely,
+
+Original Signed by Dana Durham
+
+Dana Durham, Chief
+
+———
+Footnotes
+
+1 Details on the CalAIM initiative can be found on DHCS’ website at the following link: https://www.dhcs.ca.gov/CalAIM/Pages/calaim.aspx.
+2 The 27 counties are: Del Norte, Humboldt, Lake, Lassen, Los Angeles, Marin, Mendocino, Modoc, Merced, Monterey, Napa, Orange, Riverside, San Bernardino, San Diego, San Luis Obispo, San Mateo, Santa Barbara, Santa Clara, Santa Cruz, Shasta, Siskiyou, Solano, Sonoma, Trinity, Ventura, and Yolo.
+3 The 31 counties are: Alameda, Alpine, Amador, Butte, Calaveras, Colusa, Contra Costa, El Dorado, Fresno, Glenn, Imperial, Inyo, Kern, Kings, Madera, Mariposa, Mono, Nevada, Placer, Plumas, Sacramento, San Benito, San Francisco, San Joaquin, Sierra, Stanislaus, Sutter, Tehama, Tulare, Tuolumne, and Yuba.
+4 See Attachment 1 of APL 21-015, or any superseding APL, for more detailed information on Mandatory Managed Care Enrollment. APLs and associated attachments are searchable at: https://www.dhcs.ca.gov/formsandpubs/Pages/AllPlanLetters.aspx.
+5 See the MCP boilerplate Contract located at: https://www.dhcs.ca.gov/provgovpart/Pages/MMCDBoilerplateContracts.aspx.
+6 Welfare and Institutions Code (W&I) section 14184.201(b) and (c). State law is searchable at: https://leginfo.legislature.ca.gov/faces/home.xhtml.
+7 Accommodation codes for LTC facilities are listed at: https://files.medi-cal.ca.gov/pubsdoco/publications/masters-mtp/part2/accomcdltc.pdf. Medi-Cal Provider Manuals are searchable at: https://files.medi-cal.ca.gov/pubsdoco/Publications.aspx#
+8 DHCS guidelines for billing OHC are available here: https://files.medi-cal.ca.gov/pubsdoco/Publications/masters-MTP/Part1/otherguide.pdf.
+9 A “pay and chase” arrangement is when Medi-Cal pays for the Member’s services and then seeks reimbursement from the Member’s OHC.
+10 22 California Code of Regulations (CCR) sections 51510 – 51511. The CCR is searchable at: https://govt.westlaw.com/calregs/Search/Index.
+11 See below section titled Population Health Management Requirements for further information.
+12 More information on coverage of Medi-Cal pharmacy services through Medi-Cal Rx is available at: https://medi-calrx.dhcs.ca.gov/home/ and https://mcweb.apps.prd.cammis.medi-cal.ca.gov/assets/9D62951D-8E23-4C70-8CEE-7070EA1BB6C3/ratefacilmisc.pdf?access_token=6UyVkRRfByXTZEWIh8j8QaYylPyP5ULO.
+13 The list of enrolled and licensed SNFs can be found on CDPH’s website at: https://www.cdph.ca.gov/Programs/CHCQ/LCP/CalHealthFind/Pages/SearchResult.aspx.
+14 SNF and general acute care hospital are defined in Health and Safety Code (H&S) sections 1250(a) and 1250(c)(1), respectively.
+15 See H&S sections 1367.09 (Return to skilled nursing) and 1373.96 (Completion of covered services).
+16 The California Medicaid State Plan can be accessed at the following link: http://www.dhcs.ca.gov/formsandpubs/laws/Pages/CaliforniStatePlan.aspx.
+17 See 22 CCR section 72520(b) for more information.
+18 W&I section 14184.201(b)
+19 W&I section 14182.17.
+20 MCPs remain subject to timely access obligations under H&S section 1367.03 and 28 CCR section 1300.67.2.2(c).
+21 Additional information regarding the PASRR process can be found at: https://www.dhcs.ca.gov/services/MH/Pages/PASRR.aspx
+22 The CFR is searchable at: https://www.ecfr.gov/search.
+23 This requirement applies to MCPs in the following 31 counties: Alameda, Alpine, Amador, Butte, Calaveras, Colusa, Contra Costa, El Dorado, Fresno, Glenn, Imperial, Inyo, Kern, Kings, Madera, Mariposa, Mono, Nevada, Placer, Plumas, Sacramento, San Benito, San Francisco, San Joaquin, Sierra, Stanislaus, Sutter, Tehama, Tulare, Tuolumne, and Yuba.
+24 FFS per diem rates for SNFs, subacute care facilities, pediatric subacute care facilities, and intermediate care facilities are available at: https://www.dhcs.ca.gov/services/medi-cal/Pages/LTCRU.aspx and https://www.dhcs.ca.gov/services/medi-cal/Pages/AB1629/LTC.aspx.
+25 This requirement applies to MCPs in the following 27 counties: Del Norte, Humboldt, Lake, Lassen, Los Angeles, Marin, Merced, Mendocino, Modoc, Monterey, Napa, Orange, Riverside, San Bernardino, San Diego, San Luis Obispo, San Mateo, Santa Barbara, Santa Clara, Santa Cruz, Shasta, Siskiyou, Solano, Sonoma, Trinity, Ventura, and Yolo.
+26 Rates will be available on the DHCS LTC Reimbursement webpage at: https://www.dhcs.ca.gov/services/medi-cal/Pages/LTCRU.aspx.
+27 Provider Manuals are available at: https://mcweb.apps.prd.cammis.medi-cal.ca.gov/publications/manual.
+28 Members receiving long term services and supports (LTSS), including SNF services, are one of the groups considered to be “high risk”.
+29 The DHCS PHM webpage is located at: https://www.dhcs.ca.gov/CalAIM/Pages/PopulationHealthManagement.aspx
+30 The PHM Policy Guide is available at: https://www.dhcs.ca.gov/CalAIM/Documents/PHM-Policy-Guide.pdf.
+31 The ECM & Community Supports webpage is located at: https://www.dhcs.ca.gov/CalAIM/ECM/Pages/Home.aspx.
+32 The finalized ECM and Community Supports MCP Contract Template is available at https://www.dhcs.ca.gov/Documents/MCQMD/MCP-ECM-and-ILOS-Contract-Template-Provisions.pdf.
+33 The ECM Policy Guide is available at: https://www.dhcs.ca.gov/Documents/MCQMD/ECM-Policy-Guide.pdf.
+34 The Community Supports Policy Guide is available at: https://www.dhcs.ca.gov/Documents/MCQMD/DHCS-Community-Supports-Policy-Guide.pdf.
+35 QAPI five key elements are available at: https://www.cms.gov/Medicare/Provider-Enrollment-and-Certification/QAPI/Downloads/qapifiveelements.pdf
+36 Measurement Year 2023/Reporting Year 2024 MCAS
+37 The MCOD Contract Oversight SharePoint Portal is located at: https://cadhcs.sharepoint.com/sites/MCOD-MCPSubmissionPortal/SitePages/Contract%20Oversight.aspx.
+38 For more information on Subcontractors and Network Providers, including the definition and applicable requirements, see APL 19-001, and any subsequent APLs on this topic.

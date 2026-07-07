@@ -16,7 +16,5 @@ COPY client/package.json client/
 RUN npm ci --omit=dev
 COPY --from=build /app/server/dist server/dist
 COPY --from=build /app/client/dist client/dist
-COPY data data
 EXPOSE 3000
-# Migrations run via compiled JS so tsx isn't needed in production.
-CMD ["sh", "-c", "node server/dist/db/migrate.js && node server/dist/index.js"]
+CMD ["node", "server/dist/index.js"]

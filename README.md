@@ -29,7 +29,7 @@ Every output lands in one of four clearly separated buckets:
 
 ## How it works
 
-One analysis = **segment the letter → extract each piece in parallel → merge → deterministic grounding → a per-requirement faithfulness check → save.**
+One analysis = **segment the letter → extract each piece in parallel → merge → deterministic grounding → a per-requirement faithfulness check → return.** The app is stateless: paste or upload a letter, analyze it, read/export the result. Nothing is stored.
 
 ### Why the letter is read in pieces
 
@@ -57,16 +57,16 @@ Express API
    5. Classify   route each requirement → grounded / abstained / excluded
    6. Review     second LLM call flags any paraphrase that overreaches its quotes (advisory)
    ▼
-Postgres
+JSON result → browser (nothing persisted)
 ```
 
-All model output is schema-validated on arrival, and all LLM access goes through one swappable interface — the provider SDK lives in a single file. Re-analyzing a letter replaces the previous result; there's no run-state to recover, because a failed run is simply re-run.
+All model output is schema-validated on arrival, and all LLM access goes through one swappable interface — the provider SDK lives in a single file. There's no database and no run-state to recover: a failed run is simply re-run, and exporting the checklist is how a result is kept.
 
 ## Measuring recall (the eval harness)
 
 Verification proves *precision* — everything shown is provably in the source. It says nothing about *recall*: did we catch every requirement, or quietly miss some? To measure that, the repo ships a small eval harness (`npm run eval`).
 
-The idea is to grade by **where the app points, not how it words things.** For each letter, a hand-written answer key pins every real requirement to a verbatim span of the source text. The app's citations already carry verified character offsets into that same text, so grading is pure offset overlap — the model's wording wobbles run to run, but the document's positions don't move. Each key item lands in one bucket:
+The idea is to grade by **where the app points, not how it words things.** For each letter, a hand-written answer key pins every real requirement to a verbatim span of the cleaned source text (kept as fixtures in `data/apls/`; each eval run POSTs one to the API and grades the fresh result). The app's citations already carry verified character offsets into that same text, so grading is pure offset overlap — the model's wording wobbles run to run, but the document's positions don't move. Each key item lands in one bucket:
 
 - **found** — the app pointed at that span. ✅
 - **missed** — nothing pointed there; the model never extracted it. *This is the recall gap.*
@@ -87,18 +87,16 @@ So read the output as: **everything shown green is provably in the source; the l
 
 ## Tech stack
 
-Node · TypeScript (strict) · Express · React + Vite + Tailwind · Postgres (plain SQL migrations) · OpenAI structured output · Vitest (heaviest coverage on the grounding logic) · deployed on Railway, Dockerfile included.
+Node · TypeScript (strict) · Express · React + Vite + Tailwind · OpenAI structured output · Vitest (heaviest coverage on the grounding logic) · deployed on Railway, Dockerfile included. No database — the app is stateless.
 
 ## Running locally
 
-Needs Node 20+ and Docker (for the dev Postgres).
+Needs Node 20+.
 
 ```bash
 npm install
-cp .env.example .env          # DATABASE_URL, OPENAI_API_KEY, LLM_PROVIDER, LLM_MODEL
-docker compose up -d          # Postgres 16
-npm run db:migrate && npm run db:seed
+cp .env.example .env          # OPENAI_API_KEY, LLM_PROVIDER, LLM_MODEL
 npm run dev
 ```
 
-Source documents are real, public DHCS APLs, cleaned to plain text. One of them deliberately contains a plausible obligation the letter never actually states — so you can watch the tool *abstain* instead of inventing it.
+Then paste a letter's text (or upload its PDF) and analyze. Cleaned real DHCS APLs live in `data/apls/` as eval fixtures — one of them deliberately contains a plausible obligation the letter never actually states, so you can watch the tool *abstain* instead of inventing it.

@@ -7,7 +7,7 @@ import type { ClassifiedRequirement } from './classifyRequirement.js';
 const CONCURRENCY = 100;
 const CALL_TIMEOUT_MS = 60_000;
 
-export interface RequirementForSave extends ClassifiedRequirement {
+export interface AnalyzedRequirement extends ClassifiedRequirement {
   faithfulness: 'supported' | 'needs_review' | null;
   faithfulness_reason: string | null;
 }
@@ -22,8 +22,8 @@ export interface RequirementForSave extends ClassifiedRequirement {
 export async function attachFaithfulness(
   llm: LLMClient,
   classified: ClassifiedRequirement[],
-): Promise<{ requirements: RequirementForSave[]; warnings: string[] }> {
-  const requirements: RequirementForSave[] = classified.map((req) => ({
+): Promise<{ requirements: AnalyzedRequirement[]; warnings: string[] }> {
+  const requirements: AnalyzedRequirement[] = classified.map((req) => ({
     ...req,
     faithfulness: null,
     faithfulness_reason: null,

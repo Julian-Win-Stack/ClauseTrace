@@ -1,26 +1,3 @@
-export interface AplListItem {
-  id: number;
-  apl_number: string | null;
-  title: string;
-  issued_date: string | null;
-  is_adhoc: boolean;
-  analyzed: boolean;
-  created_at: string;
-}
-
-export interface Apl {
-  id: number;
-  apl_number: string | null;
-  title: string;
-  issued_date: string | null;
-  source_url: string | null;
-  full_text: string;
-  char_length: number;
-  is_adhoc: boolean;
-  summary: string | null;
-  analyzed_at: string | null;
-}
-
 export interface ActionItem {
   text: string;
   suggested_owner_department: string;
@@ -49,19 +26,12 @@ export interface Requirement {
 }
 
 export interface Analysis {
-  summary: string | null;
-  analyzed_at: string | null;
+  summary: string;
   requirements: Requirement[];
 }
 
 export interface AnalysisResult extends Analysis {
-  aplId: number;
   warnings: string[];
-}
-
-export interface AplDetail {
-  apl: Apl;
-  analysis: Analysis | null;
 }
 
 export interface Span {

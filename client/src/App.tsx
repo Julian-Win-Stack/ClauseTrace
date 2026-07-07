@@ -1,103 +1,43 @@
-import {
-  type ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { api } from './api';
 import { ExportButton } from './components/ExportButton';
 import { ResultsPane } from './components/ResultsPane';
 import { SourcePane } from './components/SourcePane';
 import { StatusSteps } from './components/StatusSteps';
-import type { Analysis, AplDetail, AplListItem, Span } from './types';
+import type { Analysis, Span } from './types';
 
-function idFromUrl(): number | null {
-  const raw = new URLSearchParams(window.location.search).get('apl');
-  const id = Number(raw);
-  return raw !== null && Number.isInteger(id) && id > 0 ? id : null;
+interface Doc {
+  title: string;
+  text: string;
 }
 
 export default function App() {
-  const [apls, setApls] = useState<AplListItem[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(idFromUrl);
-  const [detail, setDetail] = useState<AplDetail | null>(null);
+  const [doc, setDoc] = useState<Doc | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [highlight, setHighlight] = useState<Span | null>(null);
   const [highlightAll, setHighlightAll] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPaste, setShowPaste] = useState(false);
+  const [showPaste, setShowPaste] = useState(true);
   const [pasteText, setPasteText] = useState('');
   const [pasteTitle, setPasteTitle] = useState('');
   const [fromPdf, setFromPdf] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const refreshList = useCallback(async () => {
-    try {
-      setApls(await api.listApls());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshList();
-  }, [refreshList]);
-
-  // Keep selection in sync with the URL so an analysis link is shareable.
-  useEffect(() => {
-    const onPopState = () => setSelectedId(idFromUrl());
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  const select = (id: number | null) => {
-    setSelectedId(id);
-    const url = id === null ? window.location.pathname : `?apl=${id}`;
-    window.history.pushState(null, '', url);
-  };
-
-  useEffect(() => {
-    setDetail(null);
+  const analyze = async (target: Doc) => {
+    if (running) return;
+    setDoc(target);
     setAnalysis(null);
     setWarnings([]);
     setHighlight(null);
     setError(null);
-    if (selectedId === null) return;
-    let cancelled = false;
-    api
-      .getApl(selectedId)
-      .then((d) => {
-        if (cancelled) return;
-        setDetail(d);
-        setAnalysis(d.analysis);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedId]);
-
-  const analyze = async () => {
-    if (selectedId === null || running) return;
     setRunning(true);
-    setError(null);
-    setWarnings([]);
-    setHighlight(null);
     try {
-      const result = await api.analyze(selectedId);
+      const result = await api.analyze(target.text, target.title);
       setAnalysis(result);
       setWarnings(result.warnings);
-      setApls((list) =>
-        list.map((a) => (a.id === selectedId ? { ...a, analyzed: true } : a)),
-      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -108,23 +48,14 @@ export default function App() {
   const submitPaste = async () => {
     const text = pasteText.trim();
     if (!text) return;
-    setError(null);
-    try {
-      const { id } = await api.createApl(text, pasteTitle.trim() || undefined);
-      setPasteText('');
-      setPasteTitle('');
-      setFromPdf(false);
-      setShowPaste(false);
-      await refreshList();
-      select(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
+    setShowPaste(false);
+    setFromPdf(false);
+    await analyze({ title: pasteTitle.trim() || 'Pasted document', text });
   };
 
   // Extract + clean a PDF in the browser, then drop the result into the paste
-  // box for review. The cleaned text only becomes the source of record once the
-  // user adds it — a lossy parse is never trusted on its own.
+  // box for review. The cleaned text is only analyzed once the user confirms
+  // it — a lossy parse is never trusted on its own.
   const onPickPdf = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = ''; // let the same file be re-selected later
@@ -132,8 +63,8 @@ export default function App() {
     setError(null);
     setPdfBusy(true);
     try {
-      // Load pdfjs on demand so its ~1.9 MB payload never ships to users who
-      // only view seeded APLs.
+      // Load pdfjs on demand so its ~1.9 MB payload only ships when a PDF is
+      // actually uploaded.
       const { cleanPdf } = await import('./lib/cleanPdf');
       const { text, aplNumber } = await cleanPdf(file);
       setPasteText(text);
@@ -148,21 +79,6 @@ export default function App() {
       setPdfBusy(false);
     }
   };
-
-  const optionLabel = (a: AplListItem) => {
-    const prefix = a.is_adhoc
-      ? '[Pasted] '
-      : a.apl_number
-        ? `APL ${a.apl_number} — `
-        : '';
-    return `${prefix}${a.title}${a.analyzed ? ' ✓' : ''}`;
-  };
-
-  const analyzeLabel = running
-    ? 'Analyzing…'
-    : detail?.analysis
-      ? 'Re-analyze'
-      : 'Analyze';
 
   const verifiedSpans: Span[] = analysis
     ? analysis.requirements.flatMap((r) =>
@@ -184,8 +100,8 @@ export default function App() {
             source-verified regulatory analysis
           </p>
         </div>
-        {detail && analysis && (
-          <ExportButton apl={detail.apl} analysis={analysis} />
+        {doc && analysis && (
+          <ExportButton title={doc.title} analysis={analysis} />
         )}
       </header>
 
@@ -193,28 +109,11 @@ export default function App() {
         <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-faint">
           Document
         </span>
-        <select
-          value={selectedId ?? ''}
-          onChange={(e) =>
-            select(e.target.value ? Number(e.target.value) : null)
-          }
-          className="max-w-md rounded-lg border border-rule bg-surface px-3 py-1.5 text-[13px] text-ink transition hover:border-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40"
-        >
-          <option value="">Select a document…</option>
-          {apls.map((a) => (
-            <option key={a.id} value={a.id}>
-              {optionLabel(a)}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          onClick={() => void analyze()}
-          disabled={selectedId === null || running}
-          className="rounded-lg bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition hover:bg-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {analyzeLabel}
-        </button>
+        {doc && (
+          <span className="max-w-md truncate text-[13px] text-ink">
+            {doc.title}
+          </span>
+        )}
         <button
           type="button"
           onClick={() => setShowPaste((v) => !v)}
@@ -237,10 +136,15 @@ export default function App() {
         >
           {pdfBusy ? 'Reading PDF…' : 'Upload APL PDF…'}
         </button>
-        {detail?.apl.is_adhoc && (
-          <span className="rounded border border-rule bg-paper px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-faint">
-            Pasted
-          </span>
+        {doc && (
+          <button
+            type="button"
+            onClick={() => void analyze(doc)}
+            disabled={running}
+            className="rounded-lg bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition hover:bg-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/40 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {running ? 'Analyzing…' : 'Re-analyze'}
+          </button>
         )}
       </div>
 
@@ -248,9 +152,9 @@ export default function App() {
         <div className="border-b border-rule bg-surface px-6 py-4">
           {fromPdf && (
             <p className="mb-3 border-l-2 border-advisory-line bg-advisory-soft px-3 py-2 text-[12.5px] leading-5 text-advisory">
-              Extracted from PDF — review and correct the text before adding.
-              Cleaning a regulatory PDF is imperfect, and this becomes the
-              source of record grounding runs against only when you add it.
+              Extracted from PDF — review and correct the text before analyzing.
+              Cleaning a regulatory PDF is imperfect, and this text becomes the
+              source of record grounding runs against.
             </p>
           )}
           <input
@@ -269,10 +173,10 @@ export default function App() {
           <button
             type="button"
             onClick={() => void submitPaste()}
-            disabled={!pasteText.trim()}
+            disabled={!pasteText.trim() || running}
             className="rounded-lg bg-ink px-4 py-1.5 text-[13px] font-medium text-paper transition hover:bg-ink-soft disabled:opacity-40"
           >
-            Add document
+            Analyze document
           </button>
         </div>
       )}
@@ -323,25 +227,25 @@ export default function App() {
                   Highlight quotes
                 </button>
               )}
-              {detail && (
+              {doc && (
                 <span className="font-mono text-[10.5px] text-ink-faint">
-                  {detail.apl.char_length.toLocaleString()} chars
+                  {doc.text.length.toLocaleString()} chars
                 </span>
               )}
             </div>
           </div>
           <div className="p-6">
-            {detail ? (
+            {doc ? (
               <SourcePane
-                text={detail.apl.full_text}
+                text={doc.text}
                 spans={highlightAll ? verifiedSpans : []}
                 highlight={highlight}
               />
             ) : (
               <p className="mt-16 text-center font-mono text-[12.5px] leading-6 text-ink-faint">
-                {apls.length === 0
-                  ? 'No documents yet — paste one above,\nor seed APLs with `npm run db:seed`.'
-                  : 'Select a document to view its text.'}
+                {
+                  'No document yet — paste its text above,\nor upload an APL PDF.'
+                }
               </p>
             )}
           </div>
@@ -356,11 +260,6 @@ export default function App() {
             </div>
           ) : analysis ? (
             <ResultsPane analysis={analysis} onHighlight={setHighlight} />
-          ) : detail ? (
-            <p className="mt-16 text-center text-[13.5px] text-ink-faint">
-              Not analyzed yet — click{' '}
-              <span className="font-medium text-ink-soft">Analyze</span>.
-            </p>
           ) : null}
         </section>
       </main>

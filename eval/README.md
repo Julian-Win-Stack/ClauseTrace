@@ -21,8 +21,9 @@ id,quote
 
 - **`id`** — any value, only needs to be **unique** in the file and **stable over
   time**. Never renumber or reuse an id; you refer to it across runs. Only append.
-- **`quote`** — a **verbatim** span copied from the app's `full_text` (not the
-  PDF — PDF text is lossy and its offsets won't match). Quote the whole operative
+- **`quote`** — a **verbatim** span copied from the cleaned source text in
+  `data/apls/<apl_number>.txt` (not the PDF — PDF text is lossy and its offsets
+  won't match). Quote the whole operative
   sentence (who is obligated + what they must do), long enough to be locally
   unique. When two distinct duties share one sentence, add **two rows** — the
   1-to-1 matcher then requires the app to have produced two requirements.
@@ -34,21 +35,21 @@ and loudly lists any it can't find (a bad copy), which are not graded.
 ## Running it
 
 ```
-npm run eval <apl_number> [--base <url>] [--analyze] [--key <path>] [--out <path>]
+npm run eval <apl_number> [--base <url>] [--key <path>] [--text <path>] [--out <path>]
 
-npm run eval 009                 # grade the last saved analysis (localhost)
-npm run eval 009 --analyze       # run a fresh analysis first, then grade
-npm run eval 009 --base https://<railway-app>   # grade the live demo
+npm run eval 009                 # analyze data/apls/24-009.txt on localhost, grade it
+npm run eval 009 --base https://<railway-app>   # same, against the live demo
 ```
 
 `<apl_number>` may be the full number (`24-009`) or just its numeric tail
 (`009`); the short form expands to the one answer key in `keys/` ending in it,
 and `npm run eval -- 24-009` still works.
 
-APLs are resolved by `apl_number` (numeric ids differ between local and Railway
-DBs), so the same key file works against any instance. The APL must already be
-seeded in that instance. Railway rate-limits analyses (10/day per IP, 20/day
-site-wide) — iterate locally, show the number on Railway.
+The app is stateless — every eval run POSTs the cleaned source text from
+`data/apls/<apl_number>.txt` to `/api/analyze` and grades the response, so each
+run is a fresh analysis (and burns real LLM tokens). `--text` overrides the
+source file. Railway rate-limits analyses (10/day per IP, 20/day site-wide) —
+iterate locally, show the number on Railway.
 
 Output: a score in the terminal plus a self-contained HTML report at
 `eval/out/<apl_number>.html` — open it in a browser.
@@ -77,7 +78,7 @@ of the output and recall reads ~100% forever.
 
 ```
 eval/
-  run.ts            CLI: args → fetch app API → grade → write report + print score
+  run.ts            CLI: args → POST fixture text to /api/analyze → grade → report + score
   lib/
     parseKey.ts     RFC-4180 CSV → key items (pure, tested)
     resolveKey.ts   key quotes → offsets via the app's own verifyQuote (pure, tested)

@@ -10,12 +10,12 @@ ClauseTrace turns a single regulatory letter — a California DHCS **All Plan Le
 
 1. **Ungrounded model output must NEVER reach the user as a trusted requirement.** Verification is mandatory and **deterministic** — it lives in `server/src/grounding/`, not in prompts. Trust is decided by code, not by the model's say-so.
 2. **Maintain the four-category trust taxonomy** — `grounded` / `abstained` / `excluded` / `generated` — in both the data model and the UI. Never let a source-verified claim look or read the same as generated advisory content (summary, action items).
-3. **No auth, accounts, or multi-tenancy.** Source text can come from cleaned plain text seeded offline, the paste box, or a PDF the user uploads. **PDF extraction is lossy, so it is never trusted blindly:** the client extracts + cleans the PDF and drops the result into the paste box for the user to review/edit, and only that reviewed text becomes the canonical `full_text`. A human always approves the source before grounding runs against it.
-4. **The stored APL `full_text` is the canonical citation reference.** All offsets are computed against it and nothing else is grounded against anything else.
+3. **No auth, accounts, or multi-tenancy.** Source text comes from the paste box or a PDF the user uploads. **PDF extraction is lossy, so it is never trusted blindly:** the client extracts + cleans the PDF and drops the result into the paste box for the user to review/edit, and only that reviewed text becomes the canonical `full_text`. A human always approves the source before grounding runs against it.
+4. **The submitted document text is the canonical citation reference (`full_text`).** All offsets are computed against it and nothing else is grounded against anything else.
 5. **All LLM access goes through the `LLMClient` interface** (`llm/client.ts`). Provider/model come from env (`LLM_PROVIDER`, `LLM_MODEL`) and are swappable in one place. The OpenAI SDK is imported and called **only** inside `server/src/llm/`.
 6. **All model output is validated against zod schemas** (`llm/schemas.ts`) on receipt, with **one** repair re-prompt on schema failure, then fail with a clear message. Use OpenAI **strict structured output** — but remember strict mode guarantees output *shape*, never *truth of contents*; closing that gap is exactly the grounding layer's job.
 7. **Errors are classified before any retry** (`lib/errors.ts`): retryable (rate-limit/5xx/network) → capped exponential backoff; schema-invalid → one repair then fail; auth/quota (401/403) → fail fast. Individual LLM calls and the overall analysis have timeouts.
-8. **Results are persisted so an analysis can be revisited/shared. There is no crash recovery and no run-status table — a failed run is simply re-run.** Re-analyzing an APL **replaces** its previous analysis. Non-critical stages (department classification, action items) degrade to a `warnings` array rather than failing the whole run; critical stages (extraction + grounding) do not.
+8. **The app is stateless — no database, nothing is persisted.** `POST /api/analyze { text, title? }` runs the pipeline and returns the full result; the response is the only output, and a failed or lost analysis is simply re-run. Non-critical stages (department classification, action items) degrade to a `warnings` array rather than failing the whole run; critical stages (extraction + grounding) do not.
 
 ## Commands
 
@@ -23,9 +23,7 @@ ClauseTrace turns a single regulatory letter — a California DHCS **All Plan Le
 npm run dev         # server + client together (watch)
 npm run build       # build client, compile server
 npm run start       # production: server serves the built client
-npm run db:migrate  # apply SQL migrations
-npm run db:seed     # load cleaned APLs from /data into Postgres (idempotent)
-npm run eval <apl_number> [--base <url>] [--analyze]  # grade extraction recall (apl_number = full "24-006" or short tail "006") → HTML report (see eval/README.md)
+npm run eval <apl_number> [--base <url>]  # analyze data/apls/<n>.txt fresh + grade extraction recall (apl_number = full "24-006" or short tail "006") → HTML report (see eval/README.md)
 npm test            # vitest — REQUIRED green for grounding/verification logic (also runs eval tests via test:eval)
 npm run lint        # eslint + prettier --check — REQUIRED clean before any commit
 ```
@@ -35,8 +33,9 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
 ```
 /server/src
   index.ts                 Express entry; serves built client in prod
-  /routes                  apls.ts, analyze.ts (prod-only rate limits via express-rate-limit, in-memory:
-                           per-IP 3/30min + 10/day, site-wide 20/day; needs trust proxy = 1 in index.ts)
+  /routes                  analyze.ts (POST /api/analyze — the only endpoint; prod-only rate limits via
+                           express-rate-limit, in-memory: per-IP 3/30min + 10/day, site-wide 20/day;
+                           needs trust proxy = 1 in index.ts)
   /pipeline                runAnalysis.ts (orchestrator: segmentation call → parallel per-piece extraction → merge),
                            segmentDocument.ts (pure: LLM-proposed markers → contiguous pieces covering full_text),
                            classifyRequirement.ts (pure trust routing: verify each span → grounded/abstained/excluded),
@@ -46,25 +45,22 @@ npm run lint        # eslint + prettier --check — REQUIRED clean before any co
                            offsets.ts. NO fuzzy/similarity tier — exact/normalized only (DECISIONS.md §4)
   /llm                     client.ts (interface), openaiClient.ts (+ getLLMClient factory), schemas.ts, prompts.ts,
                            faithfulness.ts (the advisory faithfulness LLM call)
-  /db                      pool.ts, queries.ts, migrate.ts (runner), migrations/001_init.sql, migrations/002_multi_span_faithfulness.sql
   /domain                  departments.ts (controlled vocabulary)
   /lib                     env.ts (loads repo-root .env), errors.ts (classifyError + retry + timeout), logger.ts,
                            concurrency.ts (mapWithConcurrency — bounded parallel, order-preserving)
 /server/test               verifyQuote.test.ts, grounding.test.ts, classifyRequirement.test.ts,
                            sortByDocumentPosition.test.ts, segmentDocument.test.ts, attachFaithfulness.test.ts
-/client/src                App.tsx (?apl=<id> share URLs; PDF upload → review-in-paste-box), api.ts, types.ts,
+/client/src                App.tsx (paste or PDF upload → review-in-paste-box → analyze → results), api.ts, types.ts,
                            /lib (cleanPdf.ts = pdfjs extraction; assembleAplText.ts = PURE, unit-tested
                                  DHCS-APL cleaner: header/footer/footnote/marker handling)
                            /components (SourcePane, ResultsPane, RequirementCard, AbstainedList,
                            ExcludedList, ActionItemList, StatusSteps, ExportButton, Badge)
-/data/apls                 <apl_number>.txt + metadata.json
-/data/seed.ts              idempotent loader (clears stale analysis if full_text changes)
-/eval                      recall harness (dev tool, standalone; hits the app's HTTP API, no app changes).
-                           run.ts (CLI), lib/{parseKey,resolveKey,match,report,types}.ts (match.ts = pure
-                           1-to-1 offset-overlap grader, reuses grounding/verifyQuote), keys/<apl>.csv (answer
-                           keys, tracked), out/<apl>.html (reports, gitignored). Grades recall by position, not
-                           wording. See eval/README.md.
-docker-compose.yml         local Postgres 16 for dev (host port 5433)
+/data/apls                 <apl_number>.txt + metadata.json — cleaned APL texts, kept as eval fixtures
+/eval                      recall harness (dev tool, standalone; POSTs data/apls/<n>.txt to the app's HTTP
+                           API — every run is a fresh analysis). run.ts (CLI), lib/{parseKey,resolveKey,
+                           match,report,types}.ts (match.ts = pure 1-to-1 offset-overlap grader, reuses
+                           grounding/verifyQuote), keys/<apl>.csv (answer keys, tracked), out/<apl>.html
+                           (reports, gitignored). Grades recall by position, not wording. See eval/README.md.
 eslint.config.js           eslint + prettier (npm run lint)
 ```
 
@@ -99,12 +95,12 @@ eslint.config.js           eslint + prettier (npm run lint)
   Finance
   Delegation Oversight
   ```
-- **Citation / span:** a single contiguous verbatim quote from `full_text` with its own offsets + method. A requirement may cite **several** spans (evidence split across the letter); grounding is **all-or-nothing** — every span must verify or the whole requirement is excluded. Requirements store a `citations JSONB` array (`{quote, verified, start, end, method}[]`), not a single `source_quote`.
-- **Faithfulness (advisory):** a non-critical LLM pass (`llm/faithfulness.ts` + `pipeline/attachFaithfulness.ts`) that judges, per grounded requirement, whether its verified quotes actually support the paraphrase. Verdict `supported | needs_review` + a reason (persisted only on `needs_review`) live on the requirement as `faithfulness` / `faithfulness_reason`. It is **generated/advisory** — it can raise a ⚠ review flag but **never** changes trust status or hides the green badge; on failure it degrades to a `warnings[]` entry with `faithfulness = null`.
+- **Citation / span:** a single contiguous verbatim quote from `full_text` with its own offsets + method. A requirement may cite **several** spans (evidence split across the letter); grounding is **all-or-nothing** — every span must verify or the whole requirement is excluded. Requirements carry a `citations` array (`{quote, verified, start, end, method}[]`), not a single `source_quote`.
+- **Faithfulness (advisory):** a non-critical LLM pass (`llm/faithfulness.ts` + `pipeline/attachFaithfulness.ts`) that judges, per grounded requirement, whether its verified quotes actually support the paraphrase. Verdict `supported | needs_review` + a reason (kept only on `needs_review`) live on the requirement as `faithfulness` / `faithfulness_reason`. It is **generated/advisory** — it can raise a ⚠ review flag but **never** changes trust status or hides the green badge; on failure it degrades to a `warnings[]` entry with `faithfulness = null`.
 - **The four trust categories:**
   - **Grounded** — extracted requirement whose citation span(s) were all verified by code to exist in `full_text`; carries verified citations + offsets. *Highest trust.*
   - **Abstained** — model was asked and explicitly declined (`not_stated`) because the source does not state it. *Honest non-answer.*
-  - **Excluded** — model asserted a requirement but at least one cited span could not be verified. Stored (with per-span `verified` flags) and shown transparently for auditability, **never trusted**.
+  - **Excluded** — model asserted a requirement but at least one cited span could not be verified. Returned (with per-span `verified` flags) and shown transparently for auditability, **never trusted**.
   - **Generated (advisory)** — content produced as guidance, not as a claim about the source: the **summary**, the **action items**, and the **faithfulness** verdict/reason. Clearly labeled generated; never presented as "what the regulation says."
 
 ## What NOT to do

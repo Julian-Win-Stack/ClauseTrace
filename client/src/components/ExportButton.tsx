@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import type { Analysis, Apl } from '../types';
+import type { Analysis } from '../types';
 
-function buildMarkdown(apl: Apl, analysis: Analysis): string {
-  const title = apl.apl_number
-    ? `APL ${apl.apl_number}: ${apl.title}`
-    : apl.title;
+function buildMarkdown(title: string, analysis: Analysis): string {
   const grounded = analysis.requirements.filter((r) => r.status === 'grounded');
   const lines: string[] = [
     `# ClauseTrace checklist — ${title}`,
@@ -50,14 +47,14 @@ function buildMarkdown(apl: Apl, analysis: Analysis): string {
 }
 
 export function ExportButton({
-  apl,
+  title,
   analysis,
 }: {
-  apl: Apl;
+  title: string;
   analysis: Analysis;
 }) {
   const [copied, setCopied] = useState(false);
-  const markdown = () => buildMarkdown(apl, analysis);
+  const markdown = () => buildMarkdown(title, analysis);
 
   const copy = async () => {
     await navigator.clipboard.writeText(markdown());
@@ -70,7 +67,12 @@ export function ExportButton({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `clausetrace-${apl.apl_number ?? apl.id}.md`;
+    const slug =
+      title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'analysis';
+    a.download = `clausetrace-${slug}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };

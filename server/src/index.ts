@@ -9,7 +9,6 @@ import express, {
 } from 'express';
 import { logger } from './lib/logger.js';
 import { analyzeRouter } from './routes/analyze.js';
-import { aplsRouter } from './routes/apls.js';
 
 const app = express();
 // Railway puts one proxy in front of the app; trust it so req.ip (used by
@@ -20,7 +19,6 @@ app.use(express.json({ limit: '2mb' }));
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
-app.use('/api/apls', aplsRouter);
 app.use('/api/analyze', analyzeRouter);
 
 // In production the server serves the built client.

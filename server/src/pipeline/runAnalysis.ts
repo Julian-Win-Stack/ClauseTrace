@@ -1,9 +1,3 @@
-import {
-  getAnalysis,
-  getApl,
-  saveAnalysis,
-  type AnalysisDto,
-} from '../db/queries.js';
 import { classifyError, withRetry, withTimeout } from '../lib/errors.js';
 import { mapWithConcurrency } from '../lib/concurrency.js';
 import { logger } from '../lib/logger.js';
@@ -22,14 +16,33 @@ import {
   type ExtractedRequirement,
 } from '../llm/schemas.js';
 import { attachFaithfulness } from './attachFaithfulness.js';
-import { classifyRequirement } from './classifyRequirement.js';
+import { classifyRequirement, type Citation } from './classifyRequirement.js';
 import { tilePieces } from './segmentDocument.js';
 import { sortByDocumentPosition } from './sortByDocumentPosition.js';
 
 const CALL_TIMEOUT_MS = 1_200_000;
 const OVERALL_TIMEOUT_MS = 1_200_000;
 
-export interface AnalysisResult extends AnalysisDto {
+export interface ActionItemDto {
+  text: string;
+  suggested_owner_department: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+export interface RequirementDto {
+  ordinal: number;
+  requirement_text: string;
+  status: 'grounded' | 'abstained' | 'excluded';
+  citations: Citation[];
+  faithfulness: 'supported' | 'needs_review' | null;
+  faithfulness_reason: string | null;
+  impacted_departments: string[];
+  action_items: ActionItemDto[];
+}
+
+export interface AnalysisResult {
+  summary: string;
+  requirements: RequirementDto[];
   warnings: string[];
 }
 
@@ -128,27 +141,24 @@ async function runSegmentedExtraction(
 }
 
 /**
- * The whole pipeline for one APL: segmentation call → parallel per-piece
- * extraction → merge → deterministic verification and trust routing → persist,
- * replacing any previous analysis. No run-status tracking, no crash recovery —
- * a failed run is simply re-run.
+ * The whole pipeline for one document: segmentation call → parallel per-piece
+ * extraction → merge → deterministic verification and trust routing →
+ * advisory faithfulness pass. Stateless — nothing is persisted; the returned
+ * result is the only output, and offsets refer to the fullText passed in.
  */
-export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
-  const apl = await getApl(aplId);
-  if (!apl) throw new Error(`APL ${aplId} not found`);
-
-  const title = apl.apl_number
-    ? `APL ${apl.apl_number}: ${apl.title}`
-    : apl.title;
+export async function runAnalysis(
+  title: string,
+  fullText: string,
+): Promise<AnalysisResult> {
   const llm = getLLMClient();
   const { summary, requirements: extracted } = await withTimeout(
-    runSegmentedExtraction(llm, title, apl.full_text),
+    runSegmentedExtraction(llm, title, fullText),
     OVERALL_TIMEOUT_MS,
     'analysis',
   );
 
   const classified = sortByDocumentPosition(
-    extracted.map((req) => classifyRequirement(req, apl.full_text)),
+    extracted.map((req) => classifyRequirement(req, fullText)),
   );
 
   const { requirements, warnings: faithfulnessWarnings } =
@@ -165,16 +175,30 @@ export async function runAnalysis(aplId: number): Promise<AnalysisResult> {
     );
   }
 
-  await saveAnalysis(aplId, summary, requirements);
-  logger.info('analysis saved', {
-    aplId,
+  logger.info('analysis complete', {
+    title,
     requirements: classified.length,
     grounded: classified.filter((r) => r.status === 'grounded').length,
     excluded: classified.filter((r) => r.status === 'excluded').length,
     abstained: classified.filter((r) => r.status === 'abstained').length,
   });
 
-  const saved = await getAnalysis(aplId);
-  if (!saved) throw new Error('analysis vanished after save');
-  return { ...saved, warnings };
+  return {
+    summary,
+    requirements: requirements.map((req, index) => ({
+      ordinal: index + 1,
+      requirement_text: req.requirement_text,
+      status: req.status,
+      citations: req.citations,
+      faithfulness: req.faithfulness,
+      faithfulness_reason: req.faithfulness_reason,
+      impacted_departments: req.impacted_departments,
+      action_items: req.action_items.map((item) => ({
+        text: item.action_item_text,
+        suggested_owner_department: item.suggested_owner_department,
+        priority: item.priority,
+      })),
+    })),
+    warnings,
+  };
 }

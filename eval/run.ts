@@ -13,8 +13,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 interface Args {
   aplNumber: string;
   base: string;
-  analyze: boolean;
   keyPath: string;
+  textPath: string;
   outPath: string;
 }
 
@@ -48,15 +48,15 @@ function resolveAplNumber(input: string): string {
 function parseArgs(argv: string[]): Args {
   const positional: string[] = [];
   let base = process.env.EVAL_BASE_URL ?? 'http://localhost:3000';
-  let analyze = false;
   let keyPath: string | undefined;
+  let textPath: string | undefined;
   let outPath: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i] as string;
-    if (a === '--analyze') analyze = true;
-    else if (a === '--base') base = argv[++i] ?? base;
+    if (a === '--base') base = argv[++i] ?? base;
     else if (a === '--key') keyPath = argv[++i];
+    else if (a === '--text') textPath = argv[++i];
     else if (a === '--out') outPath = argv[++i];
     else if (a.startsWith('--')) throw new Error(`unknown flag: ${a}`);
     else positional.push(a);
@@ -65,34 +65,22 @@ function parseArgs(argv: string[]): Args {
   const input = positional[0];
   if (!input) {
     throw new Error(
-      'usage: npm run eval <apl_number> [--base <url>] [--analyze] [--key <path>] [--out <path>]',
+      'usage: npm run eval <apl_number> [--base <url>] [--key <path>] [--text <path>] [--out <path>]',
     );
   }
   const aplNumber = resolveAplNumber(input);
   return {
     aplNumber,
     base: base.replace(/\/+$/, ''),
-    analyze,
     keyPath: keyPath ?? path.join(here, 'keys', `${aplNumber}.csv`),
+    textPath:
+      textPath ?? path.join(here, '..', 'data', 'apls', `${aplNumber}.txt`),
     outPath: outPath ?? path.join(here, 'out', `${aplNumber}.html`),
   };
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
-}
-
-async function getJson(url: string): Promise<unknown> {
-  const res = await fetch(url);
-  const body: unknown = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg =
-      isRecord(body) && typeof body.error === 'string'
-        ? body.error
-        : `HTTP ${res.status}`;
-    throw new Error(`GET ${url} failed: ${msg}`);
-  }
-  return body;
 }
 
 async function postJson(url: string, payload: unknown): Promise<unknown> {
@@ -110,25 +98,6 @@ async function postJson(url: string, payload: unknown): Promise<unknown> {
     throw new Error(`POST ${url} failed: ${msg}`);
   }
   return body;
-}
-
-/** Resolve an apl_number to its numeric id on the target instance. */
-async function resolveAplId(base: string, aplNumber: string): Promise<number> {
-  const list = await getJson(`${base}/api/apls`);
-  if (!Array.isArray(list))
-    throw new Error('GET /api/apls did not return a list');
-  for (const row of list) {
-    if (
-      isRecord(row) &&
-      row.apl_number === aplNumber &&
-      typeof row.id === 'number'
-    ) {
-      return row.id;
-    }
-  }
-  throw new Error(
-    `APL "${aplNumber}" not found on ${base}. Seed it there first (it must exist in that instance's DB).`,
-  );
 }
 
 const STATUSES: readonly AppStatus[] = ['grounded', 'abstained', 'excluded'];
@@ -188,28 +157,20 @@ async function main(): Promise<void> {
     throw new Error(`no usable rows in ${args.keyPath}`);
   }
 
-  const aplId = await resolveAplId(args.base, args.aplNumber);
-
-  if (args.analyze) {
-    console.log(`Running a fresh analysis on ${args.base} …`);
-    await postJson(`${args.base}/api/analyze`, { aplId });
-  }
-
-  const detail = await getJson(`${args.base}/api/apls/${aplId}`);
-  if (!isRecord(detail) || !isRecord(detail.apl)) {
-    throw new Error('unexpected /api/apls/:id response shape');
-  }
-  const fullText = detail.apl.full_text;
-  if (typeof fullText !== 'string') throw new Error('apl.full_text missing');
-  const title = typeof detail.apl.title === 'string' ? detail.apl.title : '';
-
-  if (detail.analysis === null || detail.analysis === undefined) {
+  const fullText = await readFile(args.textPath, 'utf8').catch(() => {
     throw new Error(
-      `APL ${args.aplNumber} has no saved analysis. Re-run with --analyze, or analyze it in the app first.`,
+      `cannot read source text: ${args.textPath} — cleaned APL fixtures live in data/apls/`,
     );
-  }
+  });
+  const title = `APL ${args.aplNumber}`;
 
-  const appReqs = toAppRequirements(detail.analysis);
+  console.log(`Running a fresh analysis on ${args.base} …`);
+  const analysis = await postJson(`${args.base}/api/analyze`, {
+    text: fullText,
+    title,
+  });
+
+  const appReqs = toAppRequirements(analysis);
   const { resolved, unresolved } = resolveKey(items, fullText);
   const result = match(resolved, appReqs);
 
@@ -221,7 +182,6 @@ async function main(): Promise<void> {
     result,
     unresolved,
     baseUrl: args.base,
-    analyzedFresh: args.analyze,
     generatedAt,
   });
   await mkdir(path.dirname(args.outPath), { recursive: true });
