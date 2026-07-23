@@ -2,11 +2,12 @@
 
 **Turn a dense regulatory letter into a source-verified list of what it requires — every requirement traceable to the exact text that proves it.**
 
-California managed-care health plans must comply with a stream of DHCS *All Plan Letters* (APLs): 5–30 pages of dense, cross-referenced legal language each. Compliance teams read every new letter by hand to answer one question — *what does this require us to do, and who's affected?* ClauseTrace does that pass in seconds.
+California managed-care health plans must comply with a stream of DHCS *All Plan Letters* (APLs): 5–30 pages of dense, cross-referenced legal language each. Compliance teams read every new letter by hand to answer one question — *what does this require us to do, and who's affected?* ClauseTrace does that in 1-3 minutes.
 
 The hard part isn't summarizing. It's trust: in compliance, a made-up requirement is worse than no answer at all. So the whole design follows one rule — **the model is never trusted on its word.**
 
 Live url: https://server-production-8408.up.railway.app/ 
+Loom demo: https://www.loom.com/share/8850f9b1576746d5ae759481c3f1c194 
 
 ## The core idea: two layers of verification
 
